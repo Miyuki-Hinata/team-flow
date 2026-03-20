@@ -1,0 +1,146 @@
+departments
+    - id (PK)
+    - 部署名
+    - 作成日時
+    - 削除ステータス
+
+    users
+    - id (PK)
+    - login_id
+    - 姓・名・姓かな・名かな
+    - メールアドレス
+    - パスワード（ハッシュ化）
+    - department_id (FK)
+    - 権限レベル
+    - 作成日時・最終更新日時・最終更新者
+    - ステータス（論理削除）
+
+    projects
+    - id (PK)
+    - プロジェクト名
+    - department_id (FK)
+    - 作成日時
+    - 削除日時
+    - ステータス（論理削除）
+
+    categories
+    - id (PK)
+    - カテゴリー名
+    - ステータス（論理削除）
+
+    tasks
+    - id (PK)
+    - タイトル・内容
+    - project_id (FK)
+    - category_id (FK)
+    - 関連タスクID
+    - 対象者
+    - is_assigned_to_all (boolean)
+    - 緊急度
+    - ステータス（進行中・完了など）
+    - 期限
+    - 作成日時・最終更新日時・最終更新者
+    - ステータス（論理削除）
+
+    task_assignees（中間テーブル）
+    - task_id (FK)
+    - user_id (FK)
+
+    related_tasks
+    - task_id (FK)
+    - related_task_id (FK)
+
+
+    patients
+    - id (PK)
+    - 姓・名
+    - 生年月日
+    - 住所
+    - 緊急連絡先
+    - department_id (FK)
+    - 作成日時・最終更新日時・最終更新者
+    - ステータス（論理削除）
+
+
+    ーーーーーーーーーーーーーーーー
+    // departments
+    GET
+    /api/departments
+    /api/departments/{department_id}
+
+    POST
+    /api/departments
+
+    PUT
+    /api/departments/{department_id}
+
+    DELETE
+    /api/departments/{department_id}
+
+    // patients
+    GET    /api/patients          → 一般ユーザーOK
+    GET    /api/patients/{id}     → 一般ユーザーOK
+    POST   /api/patients          → 管理者のみ
+    PUT    /api/patients/{id}     → 一般ユーザーOK
+    DELETE /api/patients/{id}     → 管理者のみ
+
+    GET    /api/users          → 一般ユーザーOK
+    GET    /api/users/{id}     → 一般ユーザーOK
+    POST   /api/users          → 管理者のみ
+    PUT /api/users/{id}
+    - 自分のIDと一致する場合 → 一般ユーザーOK
+    - 他人のIDの場合 → 管理者のみ
+    DELETE /api/users/{id}     → 管理者のみ
+
+    GET    /api/projects          → 一般ユーザーOK
+    GET    /api/projects/{id}     → 一般ユーザーOK
+    POST   /api/projects          → 管理者のみ
+    PUT    /api/projects/{id}     → 管理者のみ
+    DELETE /api/projects/{id}     → 管理者のみ
+
+    GET    /api/categories          → 一般ユーザーOK
+    GET    /api/categories/{id}     → 一般ユーザーOK
+    POST   /api/categories          → 管理者のみ
+    PUT    /api/categories/{id}     → 管理者のみ
+    DELETE /api/categories/{id}     → 管理者のみ
+
+
+
+    // タスク
+    GET    /api/tasks
+    GET    /api/tasks/{id}
+    POST   /api/tasks
+    PUT    /api/tasks/{id}
+    DELETE /api/tasks/{id}
+
+    // task_assignees（担当者の割り当て）
+    GET /api/tasks/{id}/assignees
+POST   /api/tasks/{id}/assignees        ← 担当者追加（bodyにuser_id）
+DELETE /api/tasks/{id}/assignees/{user_id}  ← 担当者削除
+
+    // related_tasks
+    GET    /api/tasks/{id}/related-tasks
+    POST   /api/tasks/{id}/related-tasks        ← bodyにrelated_task_id
+    DELETE /api/tasks/{id}/related-tasks/{related_task_id}
+
+
+ーーーーーーーーーーーーーーーーー
+
+curl https://start.spring.io/starter.zip \
+  -d type=maven-project \
+  -d language=java \
+  -d bootVersion=4.0.3 \
+  -d baseDir=team-flow \
+  -d groupId=com.example \
+  -d artifactId=team-flow \
+  -d packageName=com.example.teamflow \
+  -d dependencies=web,data-jpa,mysql,security,lombok \
+  -o team-flow.zip
+
+ーーーーーーーーーーーーーーーー
+
+
+  ーーーーーーーーーーーーーーーー
+  「なぜTeamFlowを作ったのか」
+
+  看護師時代の実体験から、非エンジニア職が混在する現場での情報共有の非効率さを知っていました。特定の課題に深く向き合うことで、本当に必要な機能を特定できると考え、医療現場をターゲットに設計しました。これはkintoneが目指す「現場の課題に合わせた業務改善」と同じ思想です。
