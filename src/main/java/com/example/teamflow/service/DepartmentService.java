@@ -5,6 +5,7 @@ import com.example.teamflow.repository.DepartmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -36,16 +37,15 @@ public class DepartmentService {
         // データ更新
         existingDepartment.setName(department.getName());
 
-        departmentRepository.save(existingDepartment);
-
-        return existingDepartment;
+        return departmentRepository.save(existingDepartment);
     }
 
     public String deleteDepartment(Long id) {
-        departmentRepository.findById(id)
+        Department existingDepartment = departmentRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("指定した部署が見つかりませんでした id: " + id ));
 
-        departmentRepository.deleteById(id);
+        existingDepartment.setDeletedAt(LocalDateTime.now());
+        departmentRepository.save(existingDepartment);
 
         return "部署id: " + id + " 削除しました";
     }

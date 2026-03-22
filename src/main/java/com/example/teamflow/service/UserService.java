@@ -5,6 +5,7 @@ import com.example.teamflow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,24 +35,24 @@ public class UserService {
         existingUser.setLoginId(user.getLoginId());
         existingUser.setLastName(user.getLastName());
         existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastNameKana(user.getLastName());
+        existingUser.setLastNameKana(user.getLastNameKana());
         existingUser.setFirstNameKana(user.getFirstNameKana());
         existingUser.setEmail(user.getEmail());
         existingUser.setPassword(user.getPassword());
         existingUser.setDepartment(user.getDepartment());
         existingUser.setLevel(user.getLevel());
-        existingUser.setUpdatedAt(user.getUpdatedAt());
         existingUser.setUpdatedBy(user.getUpdatedBy());
-        existingUser.setDeleted(user.isDeleted());
 
-        return existingUser;
+        return userRepository.save(existingUser);
     }
 
     public String deleteUser(Long id) {
-        userRepository.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("指定したユーザーが存在しません id = " + id));
 
-        userRepository.deleteById(id);
+        // 論理削除（正しい実装）
+        existingUser.setDeletedAt(LocalDateTime.now());
+        userRepository.save(existingUser);
 
         return "user_id: " + id + " 削除しました";
     }
