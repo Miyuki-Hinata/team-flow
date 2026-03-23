@@ -33,7 +33,7 @@ public class ProjectController {
     @PutMapping("/api/projects/{id}")
     public Project updateProject(
             @PathVariable Long id,
-            @RequestBody Project project
+            @Valid @RequestBody Project project
     ) {
         return projectService.updateProject(id, project);
     }
