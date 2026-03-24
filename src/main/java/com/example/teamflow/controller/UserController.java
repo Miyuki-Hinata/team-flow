@@ -14,8 +14,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/api/users")
-    public List<User> getUser() {
-        return userService.getUser();
+    public List<User> getUsers() {
+        return userService.getUsers();
     }
 
     @GetMapping("/api/users/{id}")

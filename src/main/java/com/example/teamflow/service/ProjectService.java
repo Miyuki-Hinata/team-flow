@@ -1,6 +1,5 @@
 package com.example.teamflow.service;
 
-import com.example.teamflow.entity.Department;
 import com.example.teamflow.entity.Project;
 import com.example.teamflow.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ public class ProjectService {
     @Autowired
     private ProjectRepository projectRepository;
 
-    public List<Project> getProject() {
+    public List<Project> getProjects() {
         return projectRepository.findAll();
     }
 

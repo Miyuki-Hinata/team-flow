@@ -15,8 +15,8 @@ public class DepartmentController {
     private DepartmentService departmentService;
 
     @GetMapping("/api/departments")
-    public List<Department> getDepartment() {
-        return departmentService.getDepartment();
+    public List<Department> getDepartments() {
+        return departmentService.getDepartments();
     }
 
     @GetMapping("/api/departments/{id}")

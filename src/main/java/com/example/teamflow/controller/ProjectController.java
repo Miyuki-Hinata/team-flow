@@ -14,8 +14,8 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping("/api/projects")
-    public List<Project> getProject() {
-        return projectService.getProject();
+    public List<Project> getProjects() {
+        return projectService.getProjects();
     }
 
     @GetMapping("/api/projects/{id}")

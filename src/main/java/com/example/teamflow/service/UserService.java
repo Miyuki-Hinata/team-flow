@@ -13,7 +13,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<User> getUser() {
+    public List<User> getUsers() {
         return userRepository.findAll();
     }
 
@@ -24,8 +24,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        User savedUser = userRepository.save(user);
-        return savedUser;
+        return userRepository.save(user);
     }
 
     public User updateUser(Long id, User user) {

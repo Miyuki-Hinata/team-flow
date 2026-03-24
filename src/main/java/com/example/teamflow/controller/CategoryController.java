@@ -14,8 +14,8 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/api/categories")
-    public List<Category> getCategory() {
-        return categoryService.getCategory();
+    public List<Category> getCategories() {
+        return categoryService.getCategories();
     }
 
     @GetMapping("/api/categories/{id}")
