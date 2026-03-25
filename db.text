@@ -35,11 +35,11 @@ department
 
     tasks
     - id (PK)
-    - タイトル・内容
+    - タイトル
+    - 内容
     - project_id (FK)
     - category_id (FK)
-    - 関連タスクID
-    - 対象者
+    - patient_id 対象者(FK)
     - is_assigned_to_all (boolean)
     - 緊急度
     - ステータス（進行中・完了など）
@@ -47,7 +47,8 @@ department
     - 作成日時
     - 最終更新日時
     - 最終更新者
-    - ステータス（論理削除）
+    - 削除ステータス
+
 
     task_assignees（中間テーブル）
     - task_id (FK)
@@ -70,7 +71,7 @@ department
     - 電話番号
     - 緊急連絡先名前
     - 緊急連絡先電話番号
-    - 担当医のID(FK)
+    - 担当医のID (FK)
     - department_id (FK)
     - 作成日時
     - 最終更新日時

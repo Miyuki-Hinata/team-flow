@@ -2,6 +2,7 @@ package com.example.teamflow.controller;
 
 import com.example.teamflow.entity.Patient;
 import com.example.teamflow.service.PatientService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +24,12 @@ public class PatientController {
     }
 
     @PostMapping("/api/patients")
-    public Patient createPatient(@RequestBody Patient patient) {
+    public Patient createPatient(@Valid @RequestBody Patient patient) {
         return patientService.createPatient(patient);
     }
 
     @PutMapping("/api/patients/{id}")
-    public Patient updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+    public Patient updatePatient(@PathVariable Long id, @Valid @RequestBody Patient patient) {
         return patientService.updatePatient(id, patient);
     }
 
