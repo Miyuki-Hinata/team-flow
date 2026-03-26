@@ -12,6 +12,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.example.teamflow.enums.Priority.MEDIUM;
+import static com.example.teamflow.enums.TaskStatus.CREATED;
+
 @Entity
 @Table(name = "tasks")
 @Getter
@@ -39,15 +42,14 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "patient_id", foreignKey = @ForeignKey(name = "fk_tasks_patient_id"))
     private Patient patient;
 
-    @NotNull(message = "全員共通タスクの有無を入力してください")
     @Column(name = "assigned_to_all")
-    private boolean assignedToAll;
+    private boolean assignedToAll = false;
 
     @NotNull(message = "優先度を入力してください")
-    private Priority priority;
+    private Priority priority = MEDIUM;
 
     @NotNull(message = "ステータスを入力してください")
-    private TaskStatus taskStatus;
+    private TaskStatus taskStatus = CREATED;
 
     private LocalDateTime dueDate;
 

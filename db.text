@@ -40,7 +40,7 @@ department
     - project_id (FK)
     - category_id (FK)
     - patient_id 対象者(FK)
-    - is_assigned_to_all (boolean)
+    - assigned_to_all (boolean)
     - 緊急度
     - ステータス（進行中・完了など）
     - 期限
