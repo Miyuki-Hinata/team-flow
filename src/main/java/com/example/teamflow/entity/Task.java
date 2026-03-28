@@ -60,4 +60,13 @@ public class Task extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private List<User> assignees;
+
+    @ManyToMany
+    @JoinTable(
+            name ="related_tasks",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "related_task_id")
+    )
+    private List<Task> relatedTasks;
+
 }
