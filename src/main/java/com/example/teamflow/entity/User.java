@@ -19,7 +19,7 @@ public class User extends BaseEntity {
     private Long id;
 
     @NotEmpty(message = "ログインIDを入力してください")
-    @Column(name = "login_id")
+    @Column(name = "login_id", unique = true)
     private String loginId;
 
     @NotEmpty(message = "苗字を入力してください")

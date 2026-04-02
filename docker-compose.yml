@@ -6,6 +6,9 @@ services:
       MYSQL_DATABASE: team-flow
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+      TZ: Asia/Tokyo
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
       - "3306:3306"
     volumes:          # 追加
