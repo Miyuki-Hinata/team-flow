@@ -19,5 +19,6 @@ public class Department extends BaseEntity {
 
     @NotEmpty(message = "部署名を入力してください")
     @Size(min = 1, max = 50, message ="部署名は１文字以上５０文字以下です。")
-    private String name;
+    @Column(name = "department_name")
+    private String departmentName;
 }

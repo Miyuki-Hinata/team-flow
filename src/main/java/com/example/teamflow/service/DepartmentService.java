@@ -35,7 +35,7 @@ public class DepartmentService {
                 .orElseThrow(()-> new RuntimeException("指定した部署が見つかりませんでした id: " + id ));
 
         // データ更新
-        existingDepartment.setName(department.getName());
+        existingDepartment.setDepartmentName(department.getDepartmentName());
 
         return departmentRepository.save(existingDepartment);
     }
