@@ -4,6 +4,7 @@ import com.example.teamflow.entity.Department;
 import com.example.teamflow.service.DepartmentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,30 +26,12 @@ public class DepartmentController {
     }
 
     @PostMapping("/api/departments")
-    public Department createDepartment(
+    public ResponseEntity<Department> createDepartment(
             @Valid @RequestBody Department department,
             BindingResult bindingResult
     ) {
-//        // バリデーションエラーチェック
-//        if (bindingResult.hasErrors()) {
-//            List<String> errorMessage = bindingResult.getAllErrors()
-//                    .stream()
-//                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-//                    .toList();
-//
-//            // ErrorResponse を作成
-//            ErrorResponse errorResponse = new ErrorResponse(
-//                    400,
-//                    "Bad Request",
-//                    errorMessage
-//            );
-//
-//
-//            return ResponseEntity
-//                    .badRequest()
-//                    .body(errorResponse);
-//        }
-        return departmentService.createDepartment(department);
+        Department created = departmentService.createDepartment(department);
+        return ResponseEntity.status(201).body(created);
     }
 
     @PutMapping("/api/departments/{id}")
