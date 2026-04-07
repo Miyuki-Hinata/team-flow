@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.Department;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.DepartmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class DepartmentService {
 
     public Department getDepartmentById(Long id) {
         Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("該当する部署が登録されていません " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("該当する部署が登録されていません " + id));
         return department;
     }
 
@@ -32,7 +33,7 @@ public class DepartmentService {
 
     public Department updateDepartment(Long id, Department department) {
         Department existingDepartment = departmentRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("指定した部署が見つかりませんでした id: " + id ));
+                .orElseThrow(()-> new ResourceNotFoundException("指定した部署が見つかりませんでした id: " + id ));
 
         // データ更新
         existingDepartment.setDepartmentName(department.getDepartmentName());
@@ -42,7 +43,7 @@ public class DepartmentService {
 
     public String deleteDepartment(Long id) {
         Department existingDepartment = departmentRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("指定した部署が見つかりませんでした id: " + id ));
+                .orElseThrow(()-> new ResourceNotFoundException("指定した部署が見つかりませんでした id: " + id ));
 
         existingDepartment.setDeletedAt(LocalDateTime.now());
         departmentRepository.save(existingDepartment);
