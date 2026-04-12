@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.Project;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class ProjectService {
 
     public Project getProjectById(Long id) {
         return projectRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するプロジェクトがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するプロジェクトがありません id: " + id));
     }
 
     public Project createProject(Project project) {
@@ -28,7 +29,7 @@ public class ProjectService {
 
     public Project updateProject(Long id, Project project) {
         Project existingProject = projectRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するプロジェクトがありません id= " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するプロジェクトがありません id= " + id));
 
         existingProject.setProjectName(project.getProjectName());
         existingProject.setDepartment(project.getDepartment());
@@ -38,7 +39,7 @@ public class ProjectService {
 
     public String deleteProject(Long id) {
         Project existingProject = projectRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するプロジェクトがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するプロジェクトがありません id: " + id));
 
         existingProject.setDeletedAt(LocalDateTime.now());
         projectRepository.save(existingProject);

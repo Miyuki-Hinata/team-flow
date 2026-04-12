@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.User;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class UserService {
 
     public User getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("該当するユーザーがいません id:" + id ));
+                .orElseThrow(()->new ResourceNotFoundException("該当するユーザーがいません id:" + id ));
         return user;
     }
 
@@ -29,7 +30,7 @@ public class UserService {
 
     public User updateUser(Long id, User user) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するユーザーがいません id = " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するユーザーがいません id = " + id));
 
         existingUser.setLoginId(user.getLoginId());
         existingUser.setLastName(user.getLastName());
@@ -47,7 +48,7 @@ public class UserService {
 
     public String deleteUser(Long id) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("指定したユーザーが存在しません id = " + id));
+                .orElseThrow(()->new ResourceNotFoundException("指定したユーザーが存在しません id = " + id));
 
         // 論理削除（正しい実装）
         existingUser.setDeletedAt(LocalDateTime.now());

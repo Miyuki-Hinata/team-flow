@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.Category;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するカテゴリーがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するカテゴリーがありません id: " + id));
     }
 
     public Category createCategory(Category category) {
@@ -28,7 +29,7 @@ public class CategoryService {
 
     public Category updateCategory(Long id, Category category) {
         Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するカテゴリーがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するカテゴリーがありません id: " + id));
 
         existingCategory.setCategoryName(category.getCategoryName());
         return categoryRepository.save(existingCategory);
@@ -36,7 +37,7 @@ public class CategoryService {
 
     public String deleteCategory(Long id) {
         Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するカテゴリーがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するカテゴリーがありません id: " + id));
 
         existingCategory.setDeletedAt(LocalDateTime.now());
         categoryRepository.save(existingCategory);

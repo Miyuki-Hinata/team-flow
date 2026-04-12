@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.Task;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class TaskService {
 
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するタスクがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));
     }
 
     public Task createTask(Task task) {
@@ -28,7 +29,7 @@ public class TaskService {
 
     public Task updateTask(Long id, Task task) {
         Task existingTask = taskRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するタスクがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));
 
         existingTask.setTitle(task.getTitle());
         existingTask.setDescription(task.getDescription());
@@ -46,7 +47,7 @@ public class TaskService {
 
     public String deleteTask(Long id) {
         Task existingTask = taskRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当するタスクがありません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));
 
         existingTask.setDeletedAt(LocalDateTime.now());
         taskRepository.save(existingTask);

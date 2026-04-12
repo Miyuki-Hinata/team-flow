@@ -1,6 +1,7 @@
 package com.example.teamflow.service;
 
 import com.example.teamflow.entity.Patient;
+import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class PatientService {
 
     public Patient getPatientById(Long id) {
         return patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("該当する患者が存在しません id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("該当する患者が存在しません id: " + id));
     }
 
     public Patient createPatient(Patient patient) {
@@ -28,7 +29,7 @@ public class PatientService {
     
     public Patient updatePatient(Long id, Patient patient) {
         Patient existingPatient = patientRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当する患者が存在しません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当する患者が存在しません id: " + id));
         
         existingPatient.setLastName(patient.getLastName());
         existingPatient.setFirstName(patient.getFirstName());
@@ -50,7 +51,7 @@ public class PatientService {
 
     public String deletePatient(Long id) {
         Patient existingPatient = patientRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("該当する患者が存在しません id: " + id));
+                .orElseThrow(()-> new ResourceNotFoundException("該当する患者が存在しません id: " + id));
 
         existingPatient.setDeletedAt(LocalDateTime.now());
         patientRepository.save(existingPatient);
