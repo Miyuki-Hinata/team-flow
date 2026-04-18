@@ -1,0 +1,129 @@
+=========================================
+TeamFlow - テーブル構成
+=========================================
+
+【共通カラム（BaseEntity）】
+全テーブルに以下のカラムが継承される
+  - created_at    DATETIME   作成日時（自動セット）
+  - updated_at    DATETIME   最終更新日時（自動セット）
+  - deleted_at    DATETIME   削除日時（論理削除用）
+  - updated_by    BIGINT     最終更新者ID
+
+=========================================
+
+■ departments（部署）
+  - id              BIGINT        PK / AUTO_INCREMENT
+  - department_name VARCHAR       部署名（NOT NULL）
+  + BaseEntity共通カラム
+
+=========================================
+
+■ users（ユーザー）
+  - id                BIGINT    PK / AUTO_INCREMENT
+  - login_id          VARCHAR   ログインID（NOT NULL, UNIQUE）
+  - last_name         VARCHAR   苗字（NOT NULL）
+  - first_name        VARCHAR   名前（NOT NULL）
+  - last_name_kana    VARCHAR   苗字かな（NOT NULL）
+  - first_name_kana   VARCHAR   名前かな（NOT NULL）
+  - email             VARCHAR   メールアドレス（NOT NULL）
+  - password          VARCHAR   パスワード（NOT NULL）
+  - department_id     BIGINT    FK → departments.id
+  - level             BIGINT    権限レベル（NOT NULL）
+  + BaseEntity共通カラム
+
+=========================================
+
+■ categories（カテゴリー）
+  - id              BIGINT    PK / AUTO_INCREMENT
+  - category_name   VARCHAR   カテゴリー名（NOT NULL）
+  + BaseEntity共通カラム
+
+=========================================
+
+■ patients（患者）
+  - id                      BIGINT    PK / AUTO_INCREMENT
+  - last_name               VARCHAR   苗字（NOT NULL）
+  - first_name              VARCHAR   名前（NOT NULL）
+  - last_name_kana          VARCHAR   苗字かな（NOT NULL）
+  - first_name_kana         VARCHAR   名前かな（NOT NULL）
+  - birth                   DATE      生年月日（NOT NULL）
+  - sex                     VARCHAR   性別（NOT NULL）
+  - address                 VARCHAR   住所（NOT NULL）
+  - tel                     VARCHAR   電話番号（NULL可）
+  - emergency_contact_name  VARCHAR   緊急連絡先氏名（NOT NULL）
+  - emergency_contact_tel   VARCHAR   緊急連絡先電話番号（NOT NULL）
+  - doctor_id               BIGINT    FK → users.id
+  - department_id           BIGINT    FK → departments.id
+  + BaseEntity共通カラム
+
+=========================================
+
+■ projects（プロジェクト）
+  - id              BIGINT    PK / AUTO_INCREMENT
+  - project_name    VARCHAR   プロジェクト名（NOT NULL）
+  - department_id   BIGINT    FK → departments.id（NOT NULL）
+  + BaseEntity共通カラム
+
+=========================================
+
+■ Announcement（お知らせ）
+- id            BIGINT    PK
+- title         VARCHAR   タイトル（NOT NULL）
+- description   TEXT      詳細（NULL可）
+- project_id    BIGINT    FK → projects.id（NULL可）
+- category_id   BIGINT    FK → categories.id（NULL可）
+- department_id BIGINT    FK → departments.id（NULL可）
+- priority      ENUM      LOW / MEDIUM / HIGH
+- expired_at    DATETIME  掲載終了日時（NULL可）
++ BaseEntity共通カラム
+
+=========================================
+
+■ tasks（タスク）
+  - id               BIGINT     PK / AUTO_INCREMENT
+  - title            VARCHAR    タイトル（NOT NULL）
+  - description      TEXT       詳細（NULL可）
+  - project_id       BIGINT     FK → projects.id
+  - category_id      BIGINT     FK → categories.id
+  - patient_id       BIGINT     FK → patients.id
+  - assigned_to_all  BOOLEAN    全員アサインフラグ（デフォルト: false）
+  - priority         ENUM       優先度（NOT NULL, デフォルト: MEDIUM）
+                                  LOW / MEDIUM / HIGH
+  - task_status      ENUM       ステータス（NOT NULL, デフォルト: CREATED）
+                                  CREATED / PROGRESS / REVIEWING / DONE
+  - due_date         DATETIME   期日（NULL可）
+  + BaseEntity共通カラム
+
+=========================================
+
+■ task_assignees（タスク担当者 中間テーブル）
+  - task_id   BIGINT   FK → tasks.id
+  - user_id   BIGINT   FK → users.id
+  ※ tasks ↔ users の多対多
+
+=========================================
+
+■ related_tasks（関連タスク 中間テーブル）
+  - task_id          BIGINT   FK → tasks.id
+  - related_task_id  BIGINT   FK → tasks.id
+  ※ tasks ↔ tasks の自己参照多対多
+
+=========================================
+
+【リレーション図】
+
+departments ─┬─< users
+             ├─< projects
+             └─< patients
+
+users ──────── patients（doctor_id）
+
+projects ────< tasks
+
+categories ──< tasks
+
+patients ────< tasks
+
+tasks ><──── users（task_assignees: 多対多）
+
+tasks ><──── tasks（related_tasks: 自己参照多対多）
