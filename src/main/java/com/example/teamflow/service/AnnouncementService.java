@@ -31,7 +31,7 @@ public class AnnouncementService {
                     response.setDepartment(announcement.getDepartment());
                     response.setPriority(announcement.getPriority());
                     response.setExpiredAt(announcement.getExpiredAt());
-                    response.setRead(announcementReadService.isRead(announcement.getId(), userId));
+                    response.setIsRead(announcementReadService.isRead(announcement.getId(), userId));
                     return response;
                 })
                 .collect(Collectors.toList());

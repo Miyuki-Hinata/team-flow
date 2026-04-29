@@ -20,6 +20,5 @@ public class AnnouncementResponse {
     private Department department;
     private Priority priority;
     private LocalDateTime expiredAt;
-    private boolean isRead;
-
+    private Boolean isRead;
 }
