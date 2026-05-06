@@ -1,5 +1,6 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.UserRequest;
 import com.example.teamflow.entity.User;
 import com.example.teamflow.service.UserService;
 import jakarta.validation.Valid;
@@ -25,17 +26,17 @@ public class UserController {
 
     @PostMapping("/api/users")
     public User createUser(
-            @Valid @RequestBody User user
+            @Valid @RequestBody UserRequest request
     ) {
-        return userService.createUser(user);
+        return userService.createUser(request);
     }
 
     @PutMapping("/api/users/{id}")
     public User updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody User user
+            @Valid @RequestBody UserRequest request
     ) {
-        return userService.updateUser(id, user);
+        return userService.updateUser(id, request);
     }
 
     @DeleteMapping("/api/users/{id}")

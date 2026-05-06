@@ -1,9 +1,16 @@
 package com.example.teamflow.service;
 
+import com.example.teamflow.dto.AnnouncementRequest;
 import com.example.teamflow.dto.AnnouncementResponse;
 import com.example.teamflow.entity.Announcement;
+import com.example.teamflow.entity.Category;
+import com.example.teamflow.entity.Department;
+import com.example.teamflow.entity.Project;
 import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.AnnouncementRepository;
+import com.example.teamflow.repository.CategoryRepository;
+import com.example.teamflow.repository.DepartmentRepository;
+import com.example.teamflow.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +25,15 @@ public class AnnouncementService {
 
     @Autowired
     private AnnouncementReadService announcementReadService;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     public List<AnnouncementResponse> getAnnouncements(Long userId) {
         return announcementRepository.findAll().stream()
@@ -42,20 +58,57 @@ public class AnnouncementService {
                 .orElseThrow(() -> new ResourceNotFoundException("該当するお知らせがありません id:" + id));
     }
 
-    public Announcement createAnnouncement(Announcement announcement) {
+    public Announcement createAnnouncement(AnnouncementRequest request) {
+        Announcement announcement = new Announcement();
+        announcement.setTitle(request.getTitle());
+        announcement.setDescription(request.getDescription());
+        announcement.setPriority(request.getPriority());
+        announcement.setExpiredAt(request.getExpiredAt());
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("該当するカテゴリーがありません"));
+
+        announcement.setCategory(category);
+
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("該当する部署がありません"));
+
+        announcement.setDepartment(department);
+
+        if (request.getProjectId() != null) {
+            Project project = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("該当するプロジェクトがありません"));
+
+            announcement.setProject(project);
+        }
+
         return announcementRepository.save(announcement);
     }
 
-    public Announcement updateAnnouncement(Long id, Announcement announcement) {
+    public Announcement updateAnnouncement(Long id, AnnouncementRequest request) {
         Announcement existingAnnouncement = announcementRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("該当するお知らせがありません id: "  + id));
 
-        existingAnnouncement.setTitle(announcement.getTitle());
-        existingAnnouncement.setDescription(announcement.getDescription());
-        existingAnnouncement.setProject(announcement.getProject());
-        existingAnnouncement.setCategory(announcement.getCategory());
-        existingAnnouncement.setPriority(announcement.getPriority());
-        existingAnnouncement.setExpiredAt(announcement.getExpiredAt());
+        existingAnnouncement.setTitle(request.getTitle());
+        existingAnnouncement.setDescription(request.getDescription());
+        existingAnnouncement.setPriority(request.getPriority());
+        existingAnnouncement.setExpiredAt(request.getExpiredAt());
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("該当するカテゴリーがありません"));
+        existingAnnouncement.setCategory(category);
+
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("該当する部署がありません"));
+        existingAnnouncement.setDepartment(department);
+
+        if (request.getProjectId() != null) {
+            Project project = projectRepository.findById(request.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("該当するプロジェクトがありません"));
+            existingAnnouncement.setProject(project);
+        } else {
+            existingAnnouncement.setProject(null);
+        }
 
         return announcementRepository.save(existingAnnouncement);
     }

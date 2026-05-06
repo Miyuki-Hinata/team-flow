@@ -1,5 +1,6 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.AnnouncementRequest;
 import com.example.teamflow.dto.AnnouncementResponse;
 import com.example.teamflow.entity.Announcement;
 import com.example.teamflow.exception.ResourceNotFoundException;
@@ -43,17 +44,17 @@ public class AnnouncementController {
 
     @PostMapping("")
     public Announcement createAnnouncement(
-            @Valid @RequestBody Announcement announcement
+            @Valid @RequestBody AnnouncementRequest request
     ) {
-        return announcementService.createAnnouncement(announcement);
+        return announcementService.createAnnouncement(request);
     }
 
     @PutMapping("/{id}")
     public Announcement updateAnnouncement(
         @PathVariable Long id,
-        @Valid @RequestBody Announcement announcement
+        @Valid @RequestBody AnnouncementRequest request
     ) {
-        return announcementService.updateAnnouncement(id, announcement);
+        return announcementService.updateAnnouncement(id, request);
     }
 
     @DeleteMapping("/{id}")

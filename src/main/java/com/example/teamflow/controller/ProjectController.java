@@ -1,5 +1,6 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.ProjectRequest;
 import com.example.teamflow.entity.Project;
 import com.example.teamflow.service.ProjectService;
 import jakarta.validation.Valid;
@@ -25,17 +26,17 @@ public class ProjectController {
 
     @PostMapping("/api/projects")
     public Project createProject(
-            @Valid @RequestBody Project project
+            @Valid @RequestBody ProjectRequest request
     ) {
-        return projectService.createProject(project);
+        return projectService.createProject(request);
     }
 
     @PutMapping("/api/projects/{id}")
     public Project updateProject(
             @PathVariable Long id,
-            @Valid @RequestBody Project project
+            @Valid @RequestBody ProjectRequest request
     ) {
-        return projectService.updateProject(id, project);
+        return projectService.updateProject(id, request);
     }
 
     @DeleteMapping("/api/projects/{id}")

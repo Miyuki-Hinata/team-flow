@@ -1,5 +1,6 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.TaskRequest;
 import com.example.teamflow.entity.Task;
 import com.example.teamflow.service.TaskService;
 import jakarta.validation.Valid;
@@ -25,17 +26,17 @@ public class TaskController {
 
     @PostMapping("/api/tasks")
     public Task createTask(
-            @Valid @RequestBody Task task
+            @Valid @RequestBody TaskRequest request
     ) {
-        return taskService.createTask(task);
+        return taskService.createTask(request);
     }
 
     @PutMapping("/api/tasks/{id}")
     public Task updateTask(
             @PathVariable Long id,
-            @Valid @RequestBody Task task
+            @Valid @RequestBody TaskRequest request
     ) {
-        return taskService.updateTask(id, task);
+        return taskService.updateTask(id, request);
     }
 
     @DeleteMapping("/api/tasks/{id}")
