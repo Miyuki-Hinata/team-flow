@@ -36,7 +36,7 @@ public class AnnouncementService {
     private ProjectRepository projectRepository;
 
     public List<AnnouncementResponse> getAnnouncements(Long userId) {
-        return announcementRepository.findAll().stream()
+        return announcementRepository.findByDeletedAtIsNull().stream()
                 .map(announcement -> {
                     AnnouncementResponse response = new AnnouncementResponse();
                     response.setId(announcement.getId());
@@ -54,7 +54,7 @@ public class AnnouncementService {
     }
 
     public Announcement getAnnouncementById(Long id) {
-        return announcementRepository.findById(id)
+        return announcementRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new ResourceNotFoundException("該当するお知らせがありません id:" + id));
     }
 
