@@ -16,7 +16,7 @@ public class TaskController {
 
     @GetMapping("/api/tasks")
     public List<Task> getTasks() {
-        return taskService.getTasks();
+        return taskService.getActiveTasks();
     }
 
     @GetMapping("/api/tasks/{id}")

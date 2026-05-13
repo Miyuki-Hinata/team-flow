@@ -36,12 +36,18 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
+    // 全件取得
     public List<Task> getTasks() {
         return taskRepository.findAll();
     }
 
+    // 削除済み除外
+    public List<Task> getActiveTasks() {
+        return taskRepository.findByDeletedAtIsNull();
+    }
+
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id)
+        return taskRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));
     }
 
