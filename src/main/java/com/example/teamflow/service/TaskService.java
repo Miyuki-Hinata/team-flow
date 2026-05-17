@@ -46,6 +46,11 @@ public class TaskService {
         return taskRepository.findByDeletedAtIsNull();
     }
 
+    // 自分の担当タスク取得
+    public List<Task> getMyTasks(Long id) {
+        return taskRepository.findByAssignees_IdAndDeletedAtIsNull(id);
+    }
+
     public Task getTaskById(Long id) {
         return taskRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));

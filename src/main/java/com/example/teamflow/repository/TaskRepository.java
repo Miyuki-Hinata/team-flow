@@ -12,4 +12,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // deletedAt が null のものだけ取得
     List<Task> findByDeletedAtIsNull();
     Optional<Task> findByIdAndDeletedAtIsNull(Long id);
+
+    // 自分の担当タスク一覧を取得
+    List<Task> findByAssignees_IdAndDeletedAtIsNull(Long userId);
 }
