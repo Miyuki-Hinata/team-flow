@@ -1,11 +1,14 @@
 package com.example.teamflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import com.example.teamflow.enums.Role;
 
 @Entity
 @Table(name = "users")
@@ -41,12 +44,17 @@ public class User extends BaseEntity {
     @NotEmpty(message = "メールアドレスを入力してください")
     private String email;
 
+    @JsonIgnore
     @NotEmpty(message = "パスワードを入力してください")
     private String password;
 
     @ManyToOne
     @JoinColumn(name = "department_id", foreignKey = @ForeignKey(name = "fk_users_department_id"))
     private Department department;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @NotNull
     private Long level;

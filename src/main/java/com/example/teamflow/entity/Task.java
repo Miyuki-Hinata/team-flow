@@ -46,9 +46,11 @@ public class Task extends BaseEntity {
     private boolean assignedToAll = false;
 
     @NotNull(message = "優先度を入力してください")
+    @Enumerated(EnumType.STRING)
     private Priority priority = MEDIUM;
 
     @NotNull(message = "ステータスを入力してください")
+    @Enumerated(EnumType.STRING)
     private TaskStatus taskStatus = CREATED;
 
     private LocalDateTime dueDate;
