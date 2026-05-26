@@ -2,6 +2,7 @@ package com.example.teamflow.controller;
 
 import com.example.teamflow.dto.UserRequest;
 import com.example.teamflow.entity.User;
+import com.example.teamflow.enums.Role;
 import com.example.teamflow.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,21 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/api/users")
-    public List<User> getUsers() {
-        return userService.getUsers();
+    public List<User> getUsers(@RequestParam(required = false) Role role) {
+        if (role == null) {
+            return userService.getUsers();
+        } else {
+            return userService.getUsersByRole(role);
+        }
     }
 
     @GetMapping("/api/users/{id}")
     public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
+
+    @GetMapping("api/users/")
+
 
     @PostMapping("/api/users")
     public User createUser(

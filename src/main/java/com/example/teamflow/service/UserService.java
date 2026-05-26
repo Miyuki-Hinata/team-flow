@@ -3,6 +3,7 @@ package com.example.teamflow.service;
 import com.example.teamflow.dto.UserRequest;
 import com.example.teamflow.entity.Department;
 import com.example.teamflow.entity.User;
+import com.example.teamflow.enums.Role;
 import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.DepartmentRepository;
 import com.example.teamflow.repository.UserRepository;
@@ -31,6 +32,10 @@ public class UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(()->new ResourceNotFoundException("該当するユーザーがいません id:" + id));
+    }
+
+    public List<User> getUsersByRole(Role role) {
+        return userRepository.findByRole(role);
     }
 
     public User createUser(UserRequest request) {
