@@ -6,6 +6,7 @@ import com.example.teamflow.entity.Patient;
 import com.example.teamflow.entity.Project;
 import com.example.teamflow.entity.Task;
 import com.example.teamflow.entity.User;
+import com.example.teamflow.enums.TaskStatus;
 import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.CategoryRepository;
 import com.example.teamflow.repository.PatientRepository;
@@ -51,6 +52,11 @@ public class TaskService {
         return taskRepository.findByAssignees_IdAndDeletedAtIsNull(id);
     }
 
+    // 患者別のタスクを取得
+    public List<Task> getTasksByPatientId(Long id) {
+        return taskRepository.findByPatient_IdAndDeletedAtIsNull(id);
+    }
+
     public Task getTaskById(Long id) {
         return taskRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(()-> new ResourceNotFoundException("該当するタスクがありません id: " + id));
@@ -62,7 +68,9 @@ public class TaskService {
         task.setDescription(request.getDescription());
         task.setAssignedToAll(request.isAssignedToAll());
         task.setPriority(request.getPriority());
-        task.setTaskStatus(request.getTaskStatus());
+        task.setTaskStatus(
+                request.getTaskStatus() == null ? TaskStatus.CREATED : request.getTaskStatus()
+        );
         task.setDueDate(request.getDueDate());
 
         if (request.getProjectId() != null) {

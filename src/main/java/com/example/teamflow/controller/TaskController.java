@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-        import com.example.teamflow.repository.UserRepository;
+import com.example.teamflow.repository.UserRepository;
 
 import java.util.List;
 
@@ -38,6 +38,11 @@ public class TaskController {
                 .getId();
 
         return taskService.getMyTasks(userId);
+    }
+
+    @GetMapping("/api/tasks/patient/{id}")
+    public List<Task> getTasksByPatientId(@PathVariable Long id) {
+        return taskService.getTasksByPatientId(id);
     }
 
     @GetMapping("/api/tasks/{id}")

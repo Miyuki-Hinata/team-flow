@@ -15,4 +15,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     // 自分の担当タスク一覧を取得
     List<Task> findByAssignees_IdAndDeletedAtIsNull(Long userId);
+
+    // 患者別のタスク一覧を取得
+    List<Task> findByPatient_IdAndDeletedAtIsNull(Long patientId);
 }
