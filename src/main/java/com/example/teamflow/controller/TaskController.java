@@ -1,8 +1,10 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.TaskHistoryResponse;
 import com.example.teamflow.dto.TaskRequest;
 import com.example.teamflow.entity.Task;
 import com.example.teamflow.exception.ResourceNotFoundException;
+import com.example.teamflow.service.TaskHistoryService;
 import com.example.teamflow.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ public class TaskController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskHistoryService taskHistoryService;
 
     @GetMapping("/api/tasks")
     public List<Task> getTasks() {
@@ -68,5 +73,10 @@ public class TaskController {
     @DeleteMapping("/api/tasks/{id}")
     public String deleteTask(@PathVariable Long id) {
         return taskService.deleteTask(id);
+    }
+
+    @GetMapping("/api/tasks/{id}/histories")
+    public List<TaskHistoryResponse> getTaskHistories(@PathVariable Long id) {
+        return taskHistoryService.getHistoriesByTaskId(id);
     }
 }
