@@ -1,11 +1,13 @@
 package com.example.teamflow.controller;
 
 import com.example.teamflow.dto.UserRequest;
+import com.example.teamflow.dto.UserResponse;
 import com.example.teamflow.entity.User;
 import com.example.teamflow.enums.Role;
 import com.example.teamflow.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +26,20 @@ public class UserController {
         }
     }
 
+    @GetMapping("/api/users/me")
+    public UserResponse getCurrentUser() {
+        String loginId = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userService.getUserByLoginId(loginId);
+        return UserResponse.from(user);
+    }
+
     @GetMapping("/api/users/{id}")
     public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
-
-    @GetMapping("api/users/")
-
 
     @PostMapping("/api/users")
     public User createUser(

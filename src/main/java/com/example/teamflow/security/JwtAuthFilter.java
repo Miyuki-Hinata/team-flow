@@ -38,7 +38,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // "Bearer xxx" の形式かチェック
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
+            try {
+                username = jwtUtil.extractUsername(token);
+            } catch (Exception e) {
+                // トークンが無効または期限切れの場合はスキップ
+            }
         }
 
         // ユーザー名が取れて、まだ認証されていない場合

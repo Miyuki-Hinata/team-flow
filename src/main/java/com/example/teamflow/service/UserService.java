@@ -34,6 +34,11 @@ public class UserService {
                 .orElseThrow(()->new ResourceNotFoundException("該当するユーザーがいません id:" + id));
     }
 
+    public User getUserByLoginId(String loginId) {
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new ResourceNotFoundException("該当するユーザーがいません loginId: " + loginId));
+    }
+
     public List<User> getUsersByRole(Role role) {
         return userRepository.findByRole(role);
     }
