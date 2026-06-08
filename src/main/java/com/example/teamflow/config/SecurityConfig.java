@@ -2,6 +2,7 @@ package com.example.teamflow.config;
 
 import com.example.teamflow.security.JwtAuthFilter;
 import com.example.teamflow.security.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +34,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // CSRF無効化（REST API用）
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(handling -> handling
+                        // 未認証（トークンが無い・無効）の場合は401を返す
+                        // ※ これを設定しないとSpring Securityのデフォルトである403が返り、
+                        //    フロントの「401検知→リフレッシュ」のロジックが機能しない
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
 
