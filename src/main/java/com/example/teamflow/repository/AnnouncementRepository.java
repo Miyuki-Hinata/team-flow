@@ -12,4 +12,6 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
     List<Announcement> findByDeletedAtIsNull();
 
     Optional<Announcement> findByIdAndDeletedAtIsNull(Long id);
+
+    List<Announcement> findByCreatedBy_IdAndDeletedAtIsNull(Long userId);
 }

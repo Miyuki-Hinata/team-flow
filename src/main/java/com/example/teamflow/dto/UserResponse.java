@@ -18,6 +18,7 @@ public class UserResponse {
     private Role role;
     private Long departmentId;
     private String departmentName;
+    private boolean admin;
 
     // EntityからDTOへ変換するファクトリメソッド
     public static UserResponse from(User user) {
@@ -26,6 +27,7 @@ public class UserResponse {
         dto.lastName = user.getLastName();
         dto.firstName = user.getFirstName();
         dto.role = user.getRole();
+        dto.admin = user.isAdmin();
 
         if (user.getDepartment() != null) {
             dto.departmentId = user.getDepartment().getId();

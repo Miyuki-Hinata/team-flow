@@ -14,6 +14,7 @@ public class AnnouncementRequest {
     private String title;
     private String description;
     private Long projectId;
+    @NotNull(message = "カテゴリーを選択してください")
     private Long categoryId;
     private Long departmentId;
     @NotNull

@@ -1,13 +1,18 @@
 package com.example.teamflow.service;
 
+import com.example.teamflow.dto.PasswordChangeRequest;
 import com.example.teamflow.dto.UserRequest;
 import com.example.teamflow.entity.Department;
+import com.example.teamflow.entity.PasswordChangeLog;
 import com.example.teamflow.entity.User;
 import com.example.teamflow.enums.Role;
+import com.example.teamflow.exception.BadRequestException;
 import com.example.teamflow.exception.ResourceNotFoundException;
 import com.example.teamflow.repository.DepartmentRepository;
+import com.example.teamflow.repository.PasswordChangeLogRepository;
 import com.example.teamflow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +29,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PasswordChangeLogRepository passwordChangeLogRepository;
 
     public List<User> getUsers() {
         return userRepository.findAll();
@@ -87,6 +95,23 @@ public class UserService {
         }
 
         return userRepository.save(existingUser);
+    }
+
+    public void changePassword(PasswordChangeRequest request) {
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = getUserByLoginId(loginId);
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), currentUser.getPassword())) {
+            throw new BadRequestException("現在のパスワードが正しくありません");
+        }
+
+        currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(currentUser);
+
+        PasswordChangeLog log = new PasswordChangeLog();
+        log.setUser(currentUser);
+        log.setChangedAt(LocalDateTime.now());
+        passwordChangeLogRepository.save(log);
     }
 
     public String deleteUser(Long id) {

@@ -42,6 +42,10 @@ public class Announcement extends BaseEntity {
     private Priority priority = MEDIUM;
 
     private LocalDateTime expiredAt;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", foreignKey = @ForeignKey(name = "fk_announcement_created_by"))
+    private User createdBy;
 }
 
 //■ Announcement（お知らせ）

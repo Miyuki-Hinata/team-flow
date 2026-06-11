@@ -1,5 +1,6 @@
 package com.example.teamflow.controller;
 
+import com.example.teamflow.dto.PasswordChangeRequest;
 import com.example.teamflow.dto.UserRequest;
 import com.example.teamflow.dto.UserResponse;
 import com.example.teamflow.entity.User;
@@ -11,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -34,6 +36,12 @@ public class UserController {
 
         User user = userService.getUserByLoginId(loginId);
         return UserResponse.from(user);
+    }
+
+    @PutMapping("/api/users/me/password")
+    public Map<String, String> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
+        userService.changePassword(request);
+        return Map.of("message", "パスワードを変更しました");
     }
 
     @GetMapping("/api/users/{id}")

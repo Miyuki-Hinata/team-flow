@@ -58,4 +58,8 @@ public class User extends BaseEntity {
 
     @NotNull
     private Long level;
+
+    public boolean isAdmin() {
+        return level != null && level == 2;
+    }
 }

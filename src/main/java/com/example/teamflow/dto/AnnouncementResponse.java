@@ -21,4 +21,5 @@ public class AnnouncementResponse {
     private Priority priority;
     private LocalDateTime expiredAt;
     private Boolean isRead;
+    private UserResponse createdBy;
 }
