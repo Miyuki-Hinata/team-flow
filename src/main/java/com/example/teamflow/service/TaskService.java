@@ -15,7 +15,6 @@ import com.example.teamflow.repository.ProjectRepository;
 import com.example.teamflow.repository.TaskHistoryRepository;
 import com.example.teamflow.repository.TaskRepository;
 import com.example.teamflow.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -28,23 +27,29 @@ import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
-    @Autowired
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProjectRepository projectRepository;
+    private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
+    private final TaskHistoryRepository taskHistoryRepository;
+    private final TaskHistoryBuilder taskHistoryBuilder;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private ProjectRepository projectRepository;
-
-    @Autowired
-    private PatientRepository patientRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private TaskHistoryRepository taskHistoryRepository;
+    public TaskService(TaskRepository taskRepository,
+                       CategoryRepository categoryRepository,
+                       ProjectRepository projectRepository,
+                       PatientRepository patientRepository,
+                       UserRepository userRepository,
+                       TaskHistoryRepository taskHistoryRepository,
+                       TaskHistoryBuilder taskHistoryBuilder) {
+        this.taskRepository = taskRepository;
+        this.categoryRepository = categoryRepository;
+        this.projectRepository = projectRepository;
+        this.patientRepository = patientRepository;
+        this.userRepository = userRepository;
+        this.taskHistoryRepository = taskHistoryRepository;
+        this.taskHistoryBuilder = taskHistoryBuilder;
+    }
 
     // 全件取得
     public List<Task> getTasks() {
@@ -145,7 +150,7 @@ public class TaskService {
         }
 
         // 変更前後の差分を履歴レコードとして生成
-        List<TaskHistory> histories = buildHistories(task, request, newProject, newCategory, newPatient, newAssignees, changedBy);
+        List<TaskHistory> histories = taskHistoryBuilder.buildHistories(task, request, newProject, newCategory, newPatient, newAssignees, changedBy);
 
         // タスクを更新
         task.setTitle(request.getTitle());
@@ -168,79 +173,6 @@ public class TaskService {
         }
 
         return savedTask;
-    }
-
-    private List<TaskHistory> buildHistories(Task task, TaskRequest request,
-                                              Project newProject, Category newCategory,
-                                              Patient newPatient, List<User> newAssignees,
-                                              User changedBy) {
-        List<TaskHistory> histories = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-
-        record(histories, task, changedBy, now, "タイトル",
-                task.getTitle(), request.getTitle());
-
-        record(histories, task, changedBy, now, "詳細",
-                task.getDescription(), request.getDescription());
-
-        record(histories, task, changedBy, now, "優先度",
-                task.getPriority() != null ? task.getPriority().name() : null,
-                request.getPriority() != null ? request.getPriority().name() : null);
-
-        record(histories, task, changedBy, now, "ステータス",
-                task.getTaskStatus() != null ? task.getTaskStatus().name() : null,
-                request.getTaskStatus() != null ? request.getTaskStatus().name() : null);
-
-        record(histories, task, changedBy, now, "期限",
-                task.getDueDate() != null ? task.getDueDate().toString() : null,
-                request.getDueDate() != null ? request.getDueDate().toString() : null);
-
-        record(histories, task, changedBy, now, "全員に割り当て",
-                String.valueOf(task.isAssignedToAll()),
-                String.valueOf(request.isAssignedToAll()));
-
-        record(histories, task, changedBy, now, "プロジェクト",
-                task.getProject() != null ? task.getProject().getProjectName() : null,
-                newProject != null ? newProject.getProjectName() : null);
-
-        record(histories, task, changedBy, now, "カテゴリー",
-                task.getCategory() != null ? task.getCategory().getCategoryName() : null,
-                newCategory != null ? newCategory.getCategoryName() : null);
-
-        record(histories, task, changedBy, now, "患者",
-                task.getPatient() != null ? task.getPatient().getLastName() + task.getPatient().getFirstName() : null,
-                newPatient != null ? newPatient.getLastName() + newPatient.getFirstName() : null);
-
-        if (newAssignees != null) {
-            String oldNames = task.getAssignees() != null
-                    ? task.getAssignees().stream()
-                            .sorted(Comparator.comparing(User::getId))
-                            .map(u -> u.getLastName() + u.getFirstName())
-                            .collect(Collectors.joining(", "))
-                    : "";
-            String newNames = newAssignees.stream()
-                    .sorted(Comparator.comparing(User::getId))
-                    .map(u -> u.getLastName() + u.getFirstName())
-                    .collect(Collectors.joining(", "));
-            record(histories, task, changedBy, now, "担当者", oldNames, newNames);
-        }
-
-        return histories;
-    }
-
-    private void record(List<TaskHistory> histories, Task task, User changedBy,
-                        LocalDateTime changedAt, String fieldName,
-                        String oldValue, String newValue) {
-        if (!Objects.equals(oldValue, newValue)) {
-            TaskHistory h = new TaskHistory();
-            h.setTask(task);
-            h.setChangedBy(changedBy);
-            h.setChangedAt(changedAt);
-            h.setFieldName(fieldName);
-            h.setOldValue(oldValue);
-            h.setNewValue(newValue);
-            histories.add(h);
-        }
     }
 
     public String deleteTask(Long id) {

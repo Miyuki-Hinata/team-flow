@@ -30,7 +30,7 @@ public class DepartmentControllerTest {
         String adminResponse = mockMvc.perform(
                         post("/api/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"loginId\": \"admin\", \"password\": \"password123\"}")
+                                .content("{\"loginId\": \"admin\", \"password\": \"password12345\"}")
                 )
                 .andReturn().getResponse().getContentAsString();
 
