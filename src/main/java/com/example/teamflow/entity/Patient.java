@@ -1,5 +1,6 @@
 package com.example.teamflow.entity;
 
+import com.example.teamflow.enums.Sex;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -38,8 +39,9 @@ public class Patient extends BaseEntity {
     @NotNull(message = "生年月日を入力してください")
     private LocalDate birth;
 
-    @NotEmpty(message = "性別を入力してください")
-    private String sex;
+    @NotNull(message = "性別を入力してください")
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
 
     @NotEmpty(message = "住所を入力してください")
     private String address;

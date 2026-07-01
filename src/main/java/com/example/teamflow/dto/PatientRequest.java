@@ -1,5 +1,6 @@
 package com.example.teamflow.dto;
 
+import com.example.teamflow.enums.Sex;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -25,8 +26,8 @@ public class PatientRequest {
     @NotNull(message = "生年月日を入力してください")
     private LocalDate birth;
 
-    @NotEmpty(message = "性別を入力してください")
-    private String sex;
+    @NotNull(message = "性別を入力してください")
+    private Sex sex;
 
     @NotEmpty(message = "住所を入力してください")
     private String address;
