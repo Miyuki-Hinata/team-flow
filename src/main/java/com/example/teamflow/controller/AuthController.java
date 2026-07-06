@@ -109,6 +109,25 @@ public class AuthController {
                 .body(Map.of("token", newAccessToken));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken) {
+
+        // Cookieのリフレッシュトークンに対応するDBレコードを失効させる
+        // （トークンが不正・存在しない場合でも、Cookie削除は行うので無視して進む）
+        if (refreshToken != null) {
+            refreshTokenRepository.findByToken(refreshToken).ifPresent(stored -> {
+                stored.setRevoked(true);
+                refreshTokenRepository.save(stored);
+            });
+        }
+
+        // maxAge=0 のCookieで上書きし、ブラウザ側のリフレッシュトークンを削除する
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildDeleteRefreshCookie().toString())
+                .build();
+    }
+
     // リフレッシュトークンをHttpOnly CookieとしてセットするためのResponseCookieを組み立てる
     private ResponseCookie buildRefreshCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, refreshToken)
@@ -117,6 +136,17 @@ public class AuthController {
                 .sameSite("Lax")
                 .path("/api/auth")
                 .maxAge(Duration.ofDays(7))
+                .build();
+    }
+
+    // 発行時と同じ属性（path等）で maxAge=0 のCookieを作り、ブラウザにリフレッシュトークンを削除させる
+    private ResponseCookie buildDeleteRefreshCookie() {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/api/auth")
+                .maxAge(0)
                 .build();
     }
 }
