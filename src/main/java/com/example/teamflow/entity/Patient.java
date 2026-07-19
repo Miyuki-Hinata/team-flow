@@ -43,17 +43,18 @@ public class Patient extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
-    @NotEmpty(message = "住所を入力してください")
+    // 住所は任意（緊急入院時に不明な場合がある）
+    @Column(nullable = true)
     private String address;
 
     private String tel;
 
-    @NotEmpty(message = "緊急連絡先の人物名を入力してください")
-    @Column(name = "emergency_contact_name")
+    // 緊急連絡先の人物名は任意（後から追加できるようにする）
+    @Column(name = "emergency_contact_name", nullable = true)
     private String emergencyContactName;
 
-    @NotEmpty(message = "緊急連絡先の電話番号を入力してください")
-    @Column(name = "emergency_contact_tel")
+    // 緊急連絡先の電話番号は任意（同上）
+    @Column(name = "emergency_contact_tel", nullable = true)
     private String emergencyContactTel;
 
     @ManyToOne

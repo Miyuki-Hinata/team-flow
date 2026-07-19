@@ -29,15 +29,15 @@ public class PatientRequest {
     @NotNull(message = "性別を入力してください")
     private Sex sex;
 
-    @NotEmpty(message = "住所を入力してください")
+    // 住所は任意（緊急入院時に不明な場合がある）
     private String address;
 
     private String tel;
 
-    @NotEmpty(message = "緊急連絡先の人物名を入力してください")
+    // 緊急連絡先の人物名は任意（後から追加できるようにする）
     private String emergencyContactName;
 
-    @NotEmpty(message = "緊急連絡先の電話番号を入力してください")
+    // 緊急連絡先の電話番号は任意（同上）
     private String emergencyContactTel;
 
     private Long doctorId;

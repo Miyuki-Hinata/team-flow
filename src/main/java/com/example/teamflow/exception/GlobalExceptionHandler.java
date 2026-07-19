@@ -1,8 +1,10 @@
 package com.example.teamflow.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -72,5 +74,29 @@ public class GlobalExceptionHandler {
                         .stream()
                         .map(v -> v.getMessage())
                         .collect(Collectors.joining(", "))));
+    }
+
+    // JSONのパースに失敗した場合（例：sex に enum 外の値 "" が来た、日付形式が不正 など）に呼ばれる。
+    // これを登録しないと、Spring 内部で /error に転送され、
+    // AuthenticationEntryPoint に拾われて 401 が返ってしまう（Spring Security でよくある落とし穴）。
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleNotReadable(
+            HttpMessageNotReadableException e
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "リクエストの形式が正しくありません"));
+    }
+
+    // DBの制約違反（NOT NULL や UNIQUE 違反）が発生した場合に呼ばれる。
+    // これを登録しないと、HttpMessageNotReadableException と同じく AuthenticationEntryPoint に流れて 401 になる。
+    // ユーザーの入力に起因することが多いため 400 で返す。
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrity(
+            DataIntegrityViolationException e
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "データの保存に失敗しました。入力内容を確認してください。"));
     }
 }
