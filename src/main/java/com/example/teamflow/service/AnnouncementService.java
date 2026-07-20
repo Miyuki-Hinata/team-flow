@@ -84,6 +84,8 @@ public class AnnouncementService {
         response.setExpiredAt(announcement.getExpiredAt());
         response.setIsRead(announcementReadService.isRead(announcement.getId(), userId));
         response.setCreatedBy(announcement.getCreatedBy() != null ? UserResponse.from(announcement.getCreatedBy()) : null);
+        // BaseEntity 由来の作成日時をコピー。フロントで「M/D H:mm」形式で表示する
+        response.setCreatedAt(announcement.getCreatedAt());
         return response;
     }
 

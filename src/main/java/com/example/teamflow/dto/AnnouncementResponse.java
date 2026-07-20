@@ -22,4 +22,6 @@ public class AnnouncementResponse {
     private LocalDateTime expiredAt;
     private Boolean isRead;
     private UserResponse createdBy;
+    // BaseEntity.createdAt をレスポンスへ含める（フロントの詳細ページ「作成日時」表示に必要）
+    private LocalDateTime createdAt;
 }
