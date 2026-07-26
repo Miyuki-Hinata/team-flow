@@ -2,12 +2,12 @@
 -- data.sql — TeamFlow 初期データ（さくら総合病院・多職種シナリオ）
 -- ============================================================
 -- 方針：
---  ・起動のたびに「リセット→再投入」する（Option A）。常に既知の綺麗な状態＝ポートフォリオのデモに最適。
+--  ・このファイルは「デモ（サンプル）データ」専用。起動のたびに「リセット→再投入」する（Option A）。
 --    タスクの期限は CURDATE() 相対で生成するので、いつ起動しても「本日のタイムライン」が埋まる。
---  ・本来はマスタ（部署/職員/カテゴリ）とデモ（患者/タスク/お知らせ）を分けて、
---    デモは dev プロファイルだけに隔離するのが本番の定石。
---    ただし本プロジェクトは「公開デモ＝データが入っている方が良い」ポートフォリオなので、
---    概念は下記コメントで区分しつつ、物理的には常時投入する。
+--  ・マスタ（参照データ＝部署・カテゴリ）は Flyway の V2__seed_master.sql に分離済み（1回だけ適用）。
+--    ここに残るのはすべてデモ：職員ユーザー・患者・タスク・お知らせ・受け持ち等。
+--    ※職員ユーザーは実運用ならアプリから登録する実データだが、本プロジェクトでは動作確認用の
+--      ダミーアカウントとして毎起動 seed する（＝デモ扱い）。
 --  ・全ユーザーのパスワードは共通で「admin1234」（採用担当が各職種でログインして見比べられるように）。
 -- ============================================================
 
@@ -26,29 +26,15 @@ DELETE FROM tasks;
 DELETE FROM announcements;
 DELETE FROM patients;
 DELETE FROM projects;
-DELETE FROM categories;
 DELETE FROM users;
-DELETE FROM departments;
+-- departments / categories はマスタ（参照データ）で Flyway(V2__seed_master.sql) が管理するため、ここでは消さない
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================================
--- 【マスタ】部署
--- ============================================================
-INSERT INTO departments (id, department_name, created_at, updated_at, deleted_at, updated_by) VALUES
- (1,  '内科病棟',          NOW(), NOW(), NULL, NULL),
- (2,  '外科病棟',          NOW(), NOW(), NULL, NULL),
- (3,  '整形外科病棟',      NOW(), NOW(), NULL, NULL),
- (4,  'ICU',              NOW(), NOW(), NULL, NULL),
- (5,  '外来',              NOW(), NOW(), NULL, NULL),
- (6,  '薬剤部',            NOW(), NOW(), NULL, NULL),
- (7,  'リハビリテーション科', NOW(), NOW(), NULL, NULL),
- (8,  '放射線科',          NOW(), NOW(), NULL, NULL),
- (9,  '臨床検査科',        NOW(), NOW(), NULL, NULL),
- (10, '栄養科',            NOW(), NOW(), NULL, NULL),
- (11, '地域連携室',        NOW(), NOW(), NULL, NULL);
+-- ※ 部署（departments）はマスタなので Flyway の V2__seed_master.sql に移動した（ここには書かない）。
 
 -- ============================================================
--- 【マスタ】職員ユーザー（多職種チーム）／全員パスワード = admin1234
+-- 【サンプル】職員ユーザー（デモ用ダミーアカウント・多職種チーム）／全員パスワード = admin1234
+-- ※実運用では職員アカウントはアプリから登録される実データ。ここでは動作確認用に seed している。
 -- password 列は "admin1234" の bcrypt ハッシュ（htpasswd -bnBC 10 で生成・検証済み）。全員共通。
 -- ============================================================
 INSERT INTO users (id, login_id, last_name, first_name, last_name_kana, first_name_kana, email, password, level, role, department_id, created_at, updated_at, deleted_at, updated_by) VALUES
@@ -78,21 +64,10 @@ INSERT INTO users (id, login_id, last_name, first_name, last_name_kana, first_na
  (24, 'caremanager', '石川',     '京子',     'いしかわ',   'きょうこ', 'caremanager@sakura-hp.jp', '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'CARE_MANAGER',  11, NOW(), NOW(), NULL, NULL),
  (25, 'general',     '一般',     'ユーザー', 'いっぱん',   'ゆーざー', 'general@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'NURSE',         1,  NOW(), NOW(), NULL, NULL);
 
--- ============================================================
--- 【マスタ】カテゴリ（フロントの色分け：緊急=赤 / 連絡=青 / シフト・その他=グレー に対応）
--- ============================================================
-INSERT INTO categories (id, category_name, created_at, updated_at, deleted_at, updated_by) VALUES
- (1, '与薬',    NOW(), NOW(), NULL, NULL),
- (2, '処置',    NOW(), NOW(), NULL, NULL),
- (3, '検査',    NOW(), NOW(), NULL, NULL),
- (4, 'リハビリ', NOW(), NOW(), NULL, NULL),
- (5, '記録',    NOW(), NOW(), NULL, NULL),
- (6, '連絡',    NOW(), NOW(), NULL, NULL),
- (7, '緊急',    NOW(), NOW(), NULL, NULL),
- (8, 'シフト',  NOW(), NOW(), NULL, NULL);
+-- ※ カテゴリ（categories）はマスタなので Flyway の V2__seed_master.sql に移動した（ここには書かない）。
 
 -- ============================================================
--- 【マスタ】プロジェクト（任意機能。少数）
+-- 【サンプル】プロジェクト（デモ用。任意機能）
 -- ============================================================
 INSERT INTO projects (id, project_name, department_id, created_at, updated_at, deleted_at, updated_by) VALUES
  (1, '内科病棟 業務改善プロジェクト', 1, NOW(), NOW(), NULL, NULL),

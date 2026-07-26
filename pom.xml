@@ -48,6 +48,20 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Flyway：DBスキーマのバージョン管理（マイグレーション）。
+		     Spring Boot 4 では公式移行ガイドに従い、サードパーティの flyway-core を直接入れるのではなく
+		     spring-boot-starter-flyway を使う。スターターが flyway-core・自動設定・
+		     「Hibernate は Flyway 完了を待つ」順序付けの配線まで一式揃えてくれる。
+		     flyway-mysql は MySQL 8 対応モジュール（Flyway 9 以降で分離。スターターに含まれないため別途追加）。
+		     バージョンは spring-boot-starter-parent(BOM) が管理するので指定しない。 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
