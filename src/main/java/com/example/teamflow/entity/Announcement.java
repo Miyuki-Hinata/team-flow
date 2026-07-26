@@ -38,6 +38,10 @@ public class Announcement extends BaseEntity {
     @JoinColumn(name ="department_id", foreignKey = @ForeignKey(name = "fk_annoucement_department_id"))
     private Department department;
 
+    // Priority を文字列で保存する（Task.priority / User.role 等と統一）。
+    // 未指定だと ordinal（数値）保存になり、enum の並び替えで意味がずれる・DBが読みにくい・
+    // 他エンティティと不整合になるため、明示的に STRING を指定する。
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "優先度を入力してください")
     private Priority priority = MEDIUM;
 
