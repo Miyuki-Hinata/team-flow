@@ -16,7 +16,8 @@ public class DepartmentService {
     private DepartmentRepository departmentRepository;
 
     public List<Department> getDepartments() {
-        return departmentRepository.findAll();
+        // 論理削除済み（deletedAt あり）は一覧に出さない
+        return departmentRepository.findByDeletedAtIsNull();
     }
 
     public Department getDepartmentById(Long id) {

@@ -15,7 +15,8 @@ public class CategoryService {
     private CategoryRepository categoryRepository;
 
     public List<Category> getCategories() {
-        return categoryRepository.findAll();
+        // 論理削除済みは一覧に出さない
+        return categoryRepository.findByDeletedAtIsNull();
     }
 
     public Category getCategoryById(Long id) {

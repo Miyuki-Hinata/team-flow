@@ -21,7 +21,8 @@ public class ProjectService {
     private DepartmentRepository departmentRepository;
 
     public List<Project> getProjects() {
-        return projectRepository.findAll();
+        // 論理削除済みは一覧に出さない
+        return projectRepository.findByDeletedAtIsNull();
     }
 
     public Project getProjectById(Long id) {

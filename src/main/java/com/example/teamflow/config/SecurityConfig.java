@@ -44,9 +44,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // マスタ（部署・カテゴリ・プロジェクト）の作成/更新/削除は管理者(ADMIN)だけに限定する。
+                        // GET（参照）は誰でも可＝下の anyRequest().authenticated() に任せる。
                         .requestMatchers(HttpMethod.POST, "/api/departments/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,"/api/departments/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/projects/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
                         .anyRequest().authenticated()  // それ以外は認証必要
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
