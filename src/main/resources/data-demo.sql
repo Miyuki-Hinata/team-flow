@@ -36,14 +36,20 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 【サンプル】職員ユーザー（デモ用ダミーアカウント・多職種チーム）／全員パスワード = admin1234
 -- ※実運用では職員アカウントはアプリから登録される実データ。ここでは動作確認用に seed している。
 -- password 列は "admin1234" の bcrypt ハッシュ（htpasswd -bnBC 10 で生成・検証済み）。全員共通。
+--
+-- 【level（権限レベル）の方針】1 = 一般 / 2 = 管理者（User.isAdmin() が level == 2 で判定）。
+--  管理者は 'admin'（id=1）のみ。管理者はマスタ（部署・カテゴリ・プロジェクト）とユーザーを
+--  編集できる強い権限なので、職種で決め打ちせず必要な人にだけ付ける。
+--  ※以前は医師(id=2〜6)も 2 だったが、「医師＝管理者」は職種による決め打ちであり、
+--    医師が部署やユーザーのマスタを編集する業務上の必然性もないため 1 に統一した。
 -- ============================================================
 INSERT INTO users (id, login_id, last_name, first_name, last_name_kana, first_name_kana, email, password, level, role, department_id, created_at, updated_at, deleted_at, updated_by) VALUES
  (1,  'admin',       '管理者',   'ユーザー', 'かんりしゃ', 'ゆーざー', 'admin@sakura-hp.jp',       '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        1,  NOW(), NOW(), NULL, NULL),
- (2,  'doctor',      '佐藤',     '健一',     'さとう',     'けんいち', 'doctor@sakura-hp.jp',      '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        2,  NOW(), NOW(), NULL, NULL),
- (3,  'doctor2',     '山田',     '大輔',     'やまだ',     'だいすけ', 'doctor2@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        1,  NOW(), NOW(), NULL, NULL),
- (4,  'doctor3',     '田中',     '誠',       'たなか',     'まこと',   'doctor3@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        3,  NOW(), NOW(), NULL, NULL),
- (5,  'doctor4',     '伊藤',     '洋子',     'いとう',     'ようこ',   'doctor4@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        4,  NOW(), NOW(), NULL, NULL),
- (6,  'doctor5',     '中村',     '隆',       'なかむら',   'たかし',   'doctor5@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        5,  NOW(), NOW(), NULL, NULL),
+ (2,  'doctor',      '佐藤',     '健一',     'さとう',     'けんいち', 'doctor@sakura-hp.jp',      '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        2,  NOW(), NOW(), NULL, NULL),
+ (3,  'doctor2',     '山田',     '大輔',     'やまだ',     'だいすけ', 'doctor2@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        1,  NOW(), NOW(), NULL, NULL),
+ (4,  'doctor3',     '田中',     '誠',       'たなか',     'まこと',   'doctor3@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        3,  NOW(), NOW(), NULL, NULL),
+ (5,  'doctor4',     '伊藤',     '洋子',     'いとう',     'ようこ',   'doctor4@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        4,  NOW(), NOW(), NULL, NULL),
+ (6,  'doctor5',     '中村',     '隆',       'なかむら',   'たかし',   'doctor5@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        5,  NOW(), NOW(), NULL, NULL),
  (7,  'nurse',       '鈴木',     '美咲',     'すずき',     'みさき',   'nurse@sakura-hp.jp',       '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'NURSE',         1,  NOW(), NOW(), NULL, NULL),
  (8,  'nurse2',      '高橋',     '由美',     'たかはし',   'ゆみ',     'nurse2@sakura-hp.jp',      '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'NURSE',         1,  NOW(), NOW(), NULL, NULL),
  (9,  'nurse3',      '渡辺',     '彩',       'わたなべ',   'あや',     'nurse3@sakura-hp.jp',      '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'NURSE',         2,  NOW(), NOW(), NULL, NULL),

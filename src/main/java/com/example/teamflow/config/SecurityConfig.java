@@ -55,6 +55,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/projects/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
+
+                        // ユーザー（職員）の作成/更新/削除は管理者(ADMIN)だけに限定する。
+                        // ただし PUT /api/users/me/password（自分のパスワード変更）は全ユーザーが使うため、
+                        // 先に authenticated として通しておく（この行を先に置くのが肝）。
+                        // マッチャは "/api/users/*"（=1セグメント。/api/users/5 や /api/users/me）を使う。
+                        // "/api/users/**"（2セグメント以上も含む）にすると /api/users/me/password まで
+                        // ADMIN 限定になり、一般ユーザーが自分のパスワードを変更できなくなるため使わない。
+                        // GET（一覧＝担当者選択などで使用／詳細）は下の anyRequest().authenticated() に任せる。
+                        .requestMatchers(HttpMethod.PUT, "/api/users/me/password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
                         .anyRequest().authenticated()  // それ以外は認証必要
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

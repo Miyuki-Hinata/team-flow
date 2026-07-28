@@ -11,5 +11,9 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByLoginId(String loginId);
-    List<User> findByRole(Role role);
+
+    // 論理削除（deleted_at がセット済み）のユーザーを除いた一覧。
+    // 削除したユーザーが管理画面の一覧や担当者の選択肢に残り続けないようにする。
+    List<User> findByDeletedAtIsNull();
+    List<User> findByRoleAndDeletedAtIsNull(Role role);
 }

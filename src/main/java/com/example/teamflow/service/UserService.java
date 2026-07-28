@@ -33,8 +33,10 @@ public class UserService {
     @Autowired
     private PasswordChangeLogRepository passwordChangeLogRepository;
 
+    // 一覧は論理削除済みを除外して返す。findAll() だと削除したユーザーまで
+    // 管理画面や担当者の選択肢に出てしまうため。
     public List<User> getUsers() {
-        return userRepository.findAll();
+        return userRepository.findByDeletedAtIsNull();
     }
 
     public User getUserById(Long id) {
@@ -47,8 +49,9 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("該当するユーザーがいません loginId: " + loginId));
     }
 
+    // 職種での絞り込みも同様に論理削除済みを除外する
     public List<User> getUsersByRole(Role role) {
-        return userRepository.findByRole(role);
+        return userRepository.findByRoleAndDeletedAtIsNull(role);
     }
 
     public User createUser(UserRequest request) {
@@ -59,7 +62,15 @@ public class UserService {
         user.setLastNameKana(request.getLastNameKana());
         user.setFirstNameKana(request.getFirstNameKana());
         user.setEmail(request.getEmail());
+
+        // パスワードは DTO 側で必須にしていない（編集時に空欄を許すため）ので、
+        // 新規作成のときだけここで必須チェックする。
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new BadRequestException("パスワードを入力してください");
+        }
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        user.setRole(request.getRole());
         user.setLevel(request.getLevel());
         user.setUpdatedBy(request.getUpdatedBy());
 
@@ -82,7 +93,15 @@ public class UserService {
         existingUser.setLastNameKana(request.getLastNameKana());
         existingUser.setFirstNameKana(request.getFirstNameKana());
         existingUser.setEmail(request.getEmail());
-        existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // パスワードは「空欄なら変更しない」。編集のたびに管理者が本人のパスワードを
+        // 再入力させられるのを避けるため。入力があったときだけハッシュし直す。
+        // （空欄で encode すると空文字のハッシュで上書きされ、本人がログインできなくなる）
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        existingUser.setRole(request.getRole());
         existingUser.setLevel(request.getLevel());
         existingUser.setUpdatedBy(request.getUpdatedBy());
 
