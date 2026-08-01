@@ -9,11 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// demo … デモデータ(data-demo.sql)を投入する（このテストはログインに admin ユーザーを使う）
+// test … application-test.properties（テスト専用の jwt.secret）を読み込む
+@ActiveProfiles({"demo", "test"})
 @SpringBootTest
 @AutoConfigureMockMvc
 public class DepartmentControllerTest {
