@@ -49,8 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // JWTが有効なら認証情報をセット
-            if (jwtUtil.validateToken(token)) {
+            // JWTが有効で、かつ「アクセストークン」であれば認証情報をセットする。
+            // 種別まで確認する理由：アクセストークンとリフレッシュトークンは同じ鍵で署名されており、
+            // 署名と有効期限だけを見ると両者を区別できない。種別を見ないと、寿命7日の
+            // リフレッシュトークンをそのまま API 呼び出しに使えてしまう。
+            //
+            // 一方 /api/auth/refresh 側で種別を見なくてよいのは、あちらが
+            // 「DB の refresh_tokens に存在するか」を確認しており、アクセストークンは
+            // そもそも DB に保存されないため構造的に弾かれるため。
+            if (jwtUtil.validateToken(token) && jwtUtil.isAccessToken(token)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities()

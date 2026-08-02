@@ -28,6 +28,14 @@ public class JwtUtil {
     // getMinKeyLength() はビット単位で返るのでバイトに直す（HS256 なら 256bit = 32バイト）。
     private static final int MIN_SECRET_BYTES = ALGORITHM.getMinKeyLength() / 8;
 
+    // トークンの種別を入れるクレーム名と、その値。
+    // アクセストークンとリフレッシュトークンは同じ鍵・同じアルゴリズムで署名されるため、
+    // 署名と有効期限を見るだけでは受け取り側で両者を区別できない。
+    // 「このトークンは何用か」をトークン自身に持たせることで、用途外の使い回しを防ぐ。
+    private static final String CLAIM_TOKEN_TYPE = "typ";
+    private static final String TOKEN_TYPE_ACCESS = "access";
+    private static final String TOKEN_TYPE_REFRESH = "refresh";
+
     // 環境変数から読み込む
     @Value("${jwt.secret}")
     private String secret;
@@ -76,6 +84,7 @@ public class JwtUtil {
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_ACCESS)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getSigningKey(), ALGORITHM)
@@ -86,11 +95,37 @@ public class JwtUtil {
     public String generateRefreshToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim(CLAIM_TOKEN_TYPE, TOKEN_TYPE_REFRESH)
                 .setId(java.util.UUID.randomUUID().toString()) // jtiクレーム：トークンを一意にするためのランダムID
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
                 .signWith(getSigningKey(), ALGORITHM)
                 .compact();
+    }
+
+    /**
+     * API 呼び出しの認証に使ってよいトークン（＝アクセストークン）かどうかを判定する。
+     *
+     * この判定が無いと、寿命7日のリフレッシュトークンをそのまま Authorization ヘッダに入れて
+     * API を叩けてしまい、アクセストークンを15分に短くした意味が失われる。
+     * さらに、ログアウトで DB 上のリフレッシュトークンを失効させても、JwtAuthFilter は
+     * DB を見ないため「失効済みのはずのトークンで7日間 API が通る」状態になっていた。
+     *
+     * 種別クレームが無い古いトークンは type が null になり、false を返す（＝拒否）。
+     */
+    public boolean isAccessToken(String token) {
+        try {
+            String type = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get(CLAIM_TOKEN_TYPE, String.class);
+            // 定数を左に置いて null 安全にする（type が null でも NPE にならない）
+            return TOKEN_TYPE_ACCESS.equals(type);
+        } catch (JwtException e) {
+            return false;
+        }
     }
 
     // リフレッシュトークンの有効期限（DB保存用）を計算する
