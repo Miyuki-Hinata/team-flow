@@ -1,13 +1,14 @@
 package com.example.teamflow.config;
 
 import com.example.teamflow.security.JwtAuthFilter;
-import com.example.teamflow.security.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -25,8 +28,14 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    // CORS で許可するオリジン。設定値（cors.allowed-origins）から読み込む。
+    // ハードコードしていた http://localhost:5173 を外に出した理由：
+    //  ・許可オリジンは「どこにデプロイしたか」で変わる環境依存の値であり、コードの決定事項ではない
+    //  ・本番用の URL を許可するためにソースを書き換えてビルドし直す、という運用を避ける
+    // List<String> で受けると、Spring がカンマ区切りを自動で分割してくれるので
+    // 複数オリジン（例：ローカル + デモ環境）を1つの環境変数で渡せる。
+    @Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -70,15 +79,51 @@ public class SecurityConfig {
                         .anyRequest().authenticated()  // それ以外は認証必要
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173"));
-                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-                    config.setAllowedHeaders(List.of("*"));
-                    config.setAllowCredentials(true);
-                    return config;
-                }));
+                // CORS の中身は corsConfigurationSource() の Bean に持たせている。
+                // withDefaults() を指定すると、Spring Security が CorsConfigurationSource 型の
+                // Bean を探して使ってくれるので、ここには「CORS を有効にする」ことだけを書けばよい。
+                .cors(Customizer.withDefaults());
         return http.build();
+    }
+
+    /**
+     * CORS の設定を組み立てる。
+     *
+     * <p>以前はフィルタチェーンの中にラムダで書いていたが、そのラムダは
+     * <b>リクエストのたびに呼ばれる</b>ものだった（リクエスト内容ごとに違うルールを返せる仕組みのため）。
+     * このアプリは常に同じルールを返すので、起動時に一度だけ組み立てる形に変えた。
+     *
+     * <p>本当の狙いは実行速度ではなく、<b>設定ミスが分かるタイミング</b>にある。<br>
+     * 許可オリジンを環境変数から読むようにしたことで、{@code .env} に {@code *} と書けてしまう
+     * ようになった。ところが {@code allowCredentials(true)} と {@code *} は同時に使えない
+     * （誰でも認証情報付きで API を叩けてしまうため、CORS の仕様で禁止されている）。
+     *
+     * <p>この矛盾は、リクエスト処理の中で初めて検査される。つまり以前の書き方では
+     * <b>アプリは正常に起動し、ブラウザからのリクエストで初めて壊れる</b>。しかも
+     * クライアントに返るのは 401 なので、「ログインできない」という原因と無関係な症状に見える。
+     *
+     * <p>そこで組み立てを起動時に移したうえで、Spring 自身が持つ検査
+     * {@link CorsConfiguration#validateAllowCredentials()} を明示的に呼ぶ。
+     * 設定ミスなら起動時点で落ちる。DB の資格情報を RequiredConfigValidator で
+     * 起動時に検証しているのと同じ方針を、CORS にも揃えた。
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedHeaders(List.of("*"));
+        // フロントは認証情報（Authorization ヘッダ）を付けて呼ぶため true にする
+        config.setAllowCredentials(true);
+
+        // 組み立て直後に検査する。オブジェクトを作っただけでは検査されないため、
+        // この一行が無いと「起動時に落ちる」効果は得られない。
+        config.validateAllowCredentials();
+
+        // どのパスにこのルールを適用するか。API 全体が対象なので "/**"。
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean

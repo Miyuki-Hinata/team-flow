@@ -1,17 +1,30 @@
+# ローカル開発用の MySQL を立てるための compose ファイル。
+#
+# 資格情報は直接書かず、同じディレクトリの .env から読み込む。
+# docker compose は .env を自動的に読むため、Spring 側（application.properties が
+# spring.config.import で読む .env）と同じ1ファイルで値が揃う。
+# これにより「compose で作った DB のパスワードと、アプリが接続に使うパスワードが食い違う」
+# という、原因の分かりにくい接続エラーを構造的に防いでいる。
+#
+# ${VAR:?メッセージ} は「未設定なら起動を止めてメッセージを出す」という compose の記法。
+# 資格情報に既定値を持たせないのは、アプリ側（application.properties）と揃えるため。
 services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: team-flow
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?未設定です。.env.example を参考に .env を作成してください}
+      MYSQL_DATABASE: ${DB_NAME:-team-flow}
+      MYSQL_USER: ${DB_USERNAME:?未設定です。.env.example を参考に .env を作成してください}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?未設定です。.env.example を参考に .env を作成してください}
       TZ: Asia/Tokyo
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
-      - "3306:3306"
-    volumes:          # 追加
+      # ホスト側のポートだけ差し替えられるようにする（既に 3306 を使っている環境向け）。
+      # コンテナ側は MySQL の既定ポートなので固定。
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      # 名前付きボリューム。コンテナを作り直してもデータが消えないようにする。
       - mysql_data:/var/lib/mysql
 
 volumes:
