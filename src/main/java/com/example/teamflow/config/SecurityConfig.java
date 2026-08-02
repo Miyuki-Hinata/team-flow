@@ -65,6 +65,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
 
+                        // 患者の登録・削除は管理者(ADMIN)だけに限定する。
+                        // 更新(PUT)は現場での情報更新を想定して一般ユーザーにも許可する
+                        // （PatientController 末尾に書いた当初の設計意図に合わせている）。
+                        //
+                        // POST だけ "/**" ではなく完全一致にしている理由：
+                        // "/api/patients/**" にすると POST /api/patients/{id}/summary（AIサマリ生成）まで
+                        // ADMIN 限定になってしまう。あちらは別の話なので巻き込まない。
+                        .requestMatchers(HttpMethod.POST, "/api/patients").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/patients/*").hasRole("ADMIN")
+
                         // ユーザー（職員）の作成/更新/削除は管理者(ADMIN)だけに限定する。
                         // ただし PUT /api/users/me/password（自分のパスワード変更）は全ユーザーが使うため、
                         // 先に authenticated として通しておく（この行を先に置くのが肝）。
