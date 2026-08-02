@@ -21,7 +21,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByLoginId(username)
+        // 論理削除済みを除外して引く。このクラスはログイン時と毎リクエストの JWT 検証時の
+        // 両方から呼ばれる「認証の入口」なので、ここで弾けば削除済みアカウントは
+        // ログインもできず、発行済みトークンも次のリクエストで無効になる。
+        //
+        // なお、ここで投げた UsernameNotFoundException は Spring Security が
+        // BadCredentialsException に差し替えて返すため、「そのアカウントは削除済み」という
+        // 情報は外部に漏れない（存在しないユーザーと同じ応答になる）。
+        User user = userRepository.findByLoginIdAndDeletedAtIsNull(username)
                 .orElseThrow(() -> new UsernameNotFoundException("ユーザーが見つかりません: " + username));
 
         List<GrantedAuthority> authorities = new ArrayList<>();
