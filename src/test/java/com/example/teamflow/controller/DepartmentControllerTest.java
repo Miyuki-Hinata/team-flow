@@ -22,6 +22,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class DepartmentControllerTest {
 
+    // デモデータ(data-demo.sql)の全ユーザーに共通のパスワード。
+    // ここを定数にしているのは、シード側のパスワードが変わったときに
+    // 直す箇所を1つにするため（以前は各テストに直書きされていて、
+    // 実際にシードと食い違ったまま気づけず失敗していた）。
+    private static final String DEMO_PASSWORD = "admin1234";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -30,29 +36,30 @@ public class DepartmentControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // 管理者トークン取得
-        String adminResponse = mockMvc.perform(
+        adminToken = loginAndGetToken("admin");      // level=2 → ROLE_ADMIN
+        generalToken = loginAndGetToken("general");  // level=1 → ROLE_USER
+    }
+
+    /**
+     * ログインしてアクセストークンを取り出す。
+     *
+     * <p>ログインが 200 であることを先に検証しているのが要点。
+     * これが無いと、ログインに失敗しても処理が進んでしまい、
+     * レスポンスに token が無いために {@code NullPointerException} で落ちる。
+     * 「NPE」だけ見てもパスワード違いだとは分からず、原因追跡に時間がかかる。
+     * 先に status を検証しておけば「401 が返っている」と表示され、即座に切り分けできる。
+     */
+    private String loginAndGetToken(String loginId) throws Exception {
+        String response = mockMvc.perform(
                         post("/api/auth/login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"loginId\": \"admin\", \"password\": \"password12345\"}")
+                                .content("{\"loginId\": \"" + loginId + "\", \"password\": \"" + DEMO_PASSWORD + "\"}")
                 )
+                .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        adminToken = new ObjectMapper()
-                .readTree(adminResponse)
-                .get("token")
-                .asText();
-
-        // 一般ユーザートークン取得
-        String generalResponse = mockMvc.perform(
-                        post("/api/auth/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"loginId\": \"general\", \"password\": \"password123\"}")
-                )
-                .andReturn().getResponse().getContentAsString();
-
-        generalToken = new ObjectMapper()
-                .readTree(generalResponse)
+        return new ObjectMapper()
+                .readTree(response)
                 .get("token")
                 .asText();
     }
