@@ -73,10 +73,11 @@ public class UserController {
 }
 
 
-//GET    /api/users          → 一般ユーザーOK
-//GET    /api/users/{id}     → 一般ユーザーOK
-//POST   /api/users          → 管理者のみ
-//PUT /api/users/{id}
-//        - 自分のIDと一致する場合 → 一般ユーザーOK
-//    - 他人のIDの場合 → 管理者のみ
-//DELETE /api/users/{id}     → 管理者のみ
+// 権限ルール（実装は SecurityConfig の URL ルール。ここは早見表）
+//GET    /api/users             → 一般ユーザーOK
+//GET    /api/users/{id}        → 一般ユーザーOK
+//POST   /api/users             → 管理者のみ
+//PUT    /api/users/{id}        → 管理者のみ
+//PUT    /api/users/me/password → 一般ユーザーOK（自分のパスワード変更のみ）
+//DELETE /api/users/{id}        → 管理者のみ（論理削除）
+// ※「自分のIDへの PUT は一般ユーザーOK」という案は未実装（必要になった時点で判断）
