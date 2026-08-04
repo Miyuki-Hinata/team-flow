@@ -62,7 +62,72 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 ## アーキテクチャ・設計のポイント
 
-<!-- コマ5で追記：構成図＋ER図（V1__init.sql から作図） -->
+### 全体構成
+
+```mermaid
+flowchart LR
+    SPA["React SPA<br>（team-flow-front）"]
+
+    subgraph API["Spring Boot 4（本リポジトリ）"]
+        SEC["Spring Security<br>JwtAuthFilter"]
+        APP["Controller ×11<br>→ Service → JPA/Hibernate"]
+    end
+
+    subgraph DB["MySQL 8（Docker）"]
+        T[("16 テーブル")]
+    end
+
+    FLY["Flyway<br>V1: スキーマ / V2: マスタ"]
+    DEMO["data-demo.sql<br>（demo プロファイル時のみ）"]
+
+    SPA -->|"JSON API + Bearer アクセストークン（15分）"| SEC
+    SPA -.->|"リフレッシュトークン（HttpOnly Cookie・7日）<br>/api/auth/refresh でローテーション"| SEC
+    SEC --> APP --> T
+    FLY -->|"起動時にマイグレーション"| T
+    DEMO -.->|"起動ごとにリセット→再投入"| T
+```
+
+### データモデル（リレーション）
+
+テーブルは 16。中核は **users（職員）・patients（患者）・tasks（タスク）** の三角形で、履歴・既読・受け持ちなどの記録テーブルがそれを取り囲む構成です。列レベルの定義はここには載せず、[`V1__init.sql`](src/main/resources/db/migration/V1__init.sql) に一本化しています（理由は下記 4.）。カーディナリティは概略で、NULL 許容の外部キーも含みます。同じテーブルの組に関係が複数ある線だけ、区別のために列名を（）で添えています。
+
+```mermaid
+erDiagram
+    departments ||--o{ users : "所属"
+    departments ||--o{ projects : "所管"
+    departments ||--o{ patients : "入院先"
+    departments ||--o{ announcements : "宛先"
+
+    users ||--o{ patients : "主治医（doctor_id）"
+
+    projects ||--o{ tasks : ""
+    categories ||--o{ tasks : ""
+    patients ||--o{ tasks : ""
+
+    tasks ||--o{ task_assignees : ""
+    users ||--o{ task_assignees : "担当"
+    tasks ||--o{ related_tasks : "関連元（task_id）"
+    tasks ||--o{ related_tasks : "関連先（related_task_id）"
+    tasks ||--o{ task_histories : ""
+    users ||--o{ task_histories : "変更者"
+
+    patients ||--o| task_summaries : "1患者1件"
+    users ||--o{ task_summaries : "生成を実行した職員"
+
+    users ||--o{ user_patient_assignments : "受け持ち"
+    patients ||--o{ user_patient_assignments : ""
+
+    projects ||--o{ announcements : ""
+    categories ||--o{ announcements : ""
+    users ||--o{ announcements : "作成者"
+    announcements ||--o{ announcement_reads : ""
+    users ||--o{ announcement_reads : "既読"
+    announcements ||--o{ announcement_histories : ""
+    users ||--o{ announcement_histories : "変更者"
+
+    users ||--o{ password_change_logs : ""
+    users ||--o{ refresh_tokens : ""
+```
 
 ### 1. 監査証跡を前提にした論理削除
 
@@ -189,7 +254,6 @@ Personal portfolio. No license granted for reuse.
 
 <!--
 === 追記予定（docs/schedule.local.md のコマ番号）===
-コマ5   : 構成図＋ER図 →「アーキテクチャ・設計のポイント」冒頭へ
 コマ6   : 技術選定の理由 →「技術スタック」直下へ
 コマ7   : 設計判断の深掘り・あえてやらなかったこと（Redux不採用 / Testcontainers不採用 /
           物理削除・パスワードリセット未実装）→「設計のポイント」に追記 or 新節
