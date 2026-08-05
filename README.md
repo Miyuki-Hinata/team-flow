@@ -56,7 +56,21 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 | フロントエンド | React 19 / TypeScript / Vite / React Router 7 / styled-components |
 | テスト | JUnit + MockMvc（バックエンド）/ Vitest + React Testing Library（フロントエンド） |
 
-<!-- コマ6で追記：技術選定の理由（Spring Boot / Flyway / styled-components / JWT / Context API＝Redux不採用） -->
+### 技術選定の理由
+
+選定の軸は、**転職を目指す業務システムの現場で実際に使われている技術で作る**ことです。そのうえで、それぞれの技術が何の要件に応えているかを記します。
+
+**Java 17 / Spring Boot** — 11 職種 × 患者 × タスクと関係の多いドメインを、型と Controller / Service / Repository のレイヤ構造で堅く組むためです。医療・業務システムの現場で広く使われており、就職後にそのまま活きることも重視しました。
+
+**MySQL 8** — このアプリのデータは多対多の関係と履歴・既読の記録が主役です。外部キー制約・一意制約で整合性を DB 側でも守れる、関係モデルが適切だと判断しました。
+
+**Flyway** — 環境ごとにスキーマがずれて「自分の環境でだけ動かない」が起きるのを防ぐためです。スキーマ変更を git 管理された SQL マイグレーションに一本化し、どの環境でも起動時に同じ順番で適用されるようにしています。
+
+**JWT + リフレッシュトークン** — SPA と REST API を分離したので、サーバーにセッションを持たないステートレスな認証が必要でした。JWT 単体の「発行後に取り消せない」弱点は、DB で失効管理するリフレッシュトークンで補っています。
+
+**styled-components** — 色・余白・角丸をデザイントークンとして 1 箇所に定義し、全コンポーネントが型付きで参照する作り方をしたかったため、theme をコンポーネントへ直接配れる CSS-in-JS が合いました。目指す現場で使われている技術でもあります。テーマの差し替えでダークモードを実現しています。
+
+**Context API（Redux は不採用）** — 現状、アプリ全体で共有する状態は認証・テーマ・トースト・未読件数の 4 つです。この規模に Redux のストア設計を持ち込むコストは見合わないと判断し、Context + props で管理しています。状態が増えて Context の連鎖が苦しくなった時点で再検討します。
 
 ---
 
@@ -143,7 +157,7 @@ erDiagram
 
 ### 4. スキーマの正解を Flyway に一本化
 
-テーブル定義の唯一の正解は [`V1__init.sql`](src/main/resources/db/migration/V1__init.sql)（16 テーブル）です。**手書きのスキーマ資料はあえて作りません**。Markdown に写した瞬間に「第 2 の正解」が生まれ、必ず古くなるからです。デモデータは Spring プロファイルで分離し（[application-demo.properties](src/main/resources/application-demo.properties)）、本番想定起動ではマスタのみ投入されます。
+テーブル定義の唯一の正解は [`V1__init.sql`](src/main/resources/db/migration/V1__init.sql)（16 テーブル）です。Hibernate の自動 DDL は無効化し（`spring.jpa.hibernate.ddl-auto=none`）、エンティティの書き方ひとつで DB が暗黙に変わる経路を塞いでいます。**手書きのスキーマ資料もあえて作りません**。Markdown に写した瞬間に「第 2 の正解」が生まれ、必ず古くなるからです。デモデータは Spring プロファイルで分離し（[application-demo.properties](src/main/resources/application-demo.properties)）、本番想定起動ではマスタのみ投入されます。
 
 ### 5. 設定ミスは起動時に落とす
 
@@ -254,7 +268,6 @@ Personal portfolio. No license granted for reuse.
 
 <!--
 === 追記予定（docs/schedule.local.md のコマ番号）===
-コマ6   : 技術選定の理由 →「技術スタック」直下へ
 コマ7   : 設計判断の深掘り・あえてやらなかったこと（Redux不採用 / Testcontainers不採用 /
           物理削除・パスワードリセット未実装）→「設計のポイント」に追記 or 新節
 コマ8-9 : デモGIF →「デモ」冒頭へ（nurse で撮影。admin はダッシュボードが空で見栄えしない）
