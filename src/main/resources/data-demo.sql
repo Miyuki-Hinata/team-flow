@@ -160,6 +160,20 @@ INSERT INTO user_patient_assignments (id, user_id, patient_id, created_at, updat
  (7, 1, 7,  NOW(), NOW(), NULL, NULL);
 
 -- ============================================================
+-- 【サンプル】タスク変更履歴（デモ用）
+--   これが無いとタスク詳細の「変更履歴」欄が常に空で、履歴機能が見えない。
+--   field_name は日本語・値は enum 名＝TaskHistoryBuilder が実際に書く形式に合わせる。
+--   タスク1（朝の内服薬・現在 HIGH/PROGRESS）に矛盾しない流れ：
+--     昨日19:00 主治医の山田(id3)が優先度を MEDIUM→HIGH に引き上げ
+--     今朝 7:45 担当の鈴木(id7)がステータスを CREATED→PROGRESS に（対応開始）
+--   ※職種をまたいだ変更が履歴に残る例として、医師→看護師の順にしている
+-- ============================================================
+INSERT INTO task_histories (id, task_id, field_name, old_value, new_value, changed_by_user_id, changed_at) VALUES
+ (1, 1,  '優先度',     'MEDIUM',  'HIGH',     3, DATE_ADD(CURDATE(), INTERVAL -300 MINUTE)),
+ (2, 1,  'ステータス', 'CREATED', 'PROGRESS', 7, DATE_ADD(CURDATE(), INTERVAL 465 MINUTE)),
+ (3, 11, 'ステータス', 'CREATED', 'PROGRESS', 8, DATE_ADD(CURDATE(), INTERVAL -120 MINUTE));
+
+-- ============================================================
 -- 【サンプル】お知らせ（緊急/連絡/シフトを混在。有効・期限切れを分散）
 --   expired_at：未来=有効、過去=期限切れ。created_at は少しずつずらして並び順を作る。
 -- ============================================================
@@ -176,3 +190,23 @@ INSERT INTO announcements (id, title, description, project_id, category_id, depa
  (10, '駐車場工事のお知らせ（終了）',        '工事は完了しました。',                     NULL, 6, NULL, 'LOW',    DATE_ADD(CURDATE(), INTERVAL -3 DAY), 1,  DATE_ADD(NOW(), INTERVAL -7 DAY),   NOW(), NULL, NULL),
  (11, '褥瘡対策委員会の開催',                '今月の委員会を開催します。',               NULL, 6, 1,    'MEDIUM', DATE_ADD(CURDATE(), INTERVAL 7 DAY),  7,  DATE_ADD(NOW(), INTERVAL -2 DAY),   NOW(), NULL, NULL),
  (12, '夏季休暇の申請受付を開始します',      '希望日を早めに申請してください。',         NULL, 8, NULL, 'LOW',    DATE_ADD(CURDATE(), INTERVAL 45 DAY), 1,  DATE_ADD(NOW(), INTERVAL -4 DAY),   NOW(), NULL, NULL);
+
+-- ============================================================
+-- 【サンプル】お知らせ変更履歴（デモ用）
+--   お知らせ1（インフルエンザ・現在 HIGH）：作成後に状況が悪化して
+--   管理者が優先度を引き上げた、という現在値と矛盾しない1行。
+--   ※FK の親（announcements）より後に INSERT する必要があるためファイル末尾に置く
+-- ============================================================
+INSERT INTO announcement_histories (id, announcement_id, field_name, old_value, new_value, changed_by_user_id, changed_at) VALUES
+ (1, 1, '優先度', 'MEDIUM', 'HIGH', 1, DATE_ADD(NOW(), INTERVAL -30 MINUTE));
+
+-- ============================================================
+-- 【サンプル】AIサマリ（デモ用）
+--   患者1（田村花子）に1件。内容は実際のシードタスク（朝内服・採血・回診・
+--   点滴ルート交換・未入力の看護記録・優先度引き上げ履歴）と整合させている。
+--   ※LLM接続は未実装（#26）。これは「生成済みサマリの表示」を見せるための固定データ。
+--     デモ中に「再生成」を押すとモック実装の文言に置き換わるので押さないこと。
+-- ============================================================
+INSERT INTO task_summaries (id, patient_id, summary, generated_by_user_id, generated_at, created_at, updated_at, deleted_at, updated_by) VALUES
+ (1, 1, '高血圧・糖尿病の内服管理で入院中。本日は 8:00 の朝内服（優先度：高）から開始し、10:00 採血、11:00 主治医回診、15:00 点滴ルート交換を予定。昨日分の看護記録が未入力のため本日中の記入が必要。直近で主治医により朝内服の優先度が引き上げられており、与薬後の状態観察を優先する。',
+  7, DATE_ADD(CURDATE(), INTERVAL 470 MINUTE), NOW(), NOW(), NULL, NULL);
