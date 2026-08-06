@@ -38,13 +38,15 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- password 列は "admin1234" の bcrypt ハッシュ（htpasswd -bnBC 10 で生成・検証済み）。全員共通。
 --
 -- 【level（権限レベル）の方針】1 = 一般 / 2 = 管理者（User.isAdmin() が level == 2 で判定）。
---  管理者は 'admin'（id=1）のみ。管理者はマスタ（部署・カテゴリ・プロジェクト）とユーザーを
+--  管理者は 'admin'（id=1・看護師長の大石）のみ。管理者はマスタ（部署・カテゴリ・プロジェクト）とユーザーを
 --  編集できる強い権限なので、職種で決め打ちせず必要な人にだけ付ける。
+--  ※admin を「看護師（NURSE）だが管理者」にしているのは意図的。権限(level)と職種(role)を
+--    分離した設計（README 設計ポイント3）の実例をデモデータ自身で示すため。
 --  ※以前は医師(id=2〜6)も 2 だったが、「医師＝管理者」は職種による決め打ちであり、
 --    医師が部署やユーザーのマスタを編集する業務上の必然性もないため 1 に統一した。
 -- ============================================================
 INSERT INTO users (id, login_id, last_name, first_name, last_name_kana, first_name_kana, email, password, level, role, department_id, created_at, updated_at, deleted_at, updated_by) VALUES
- (1,  'admin',       '管理者',   'ユーザー', 'かんりしゃ', 'ゆーざー', 'admin@sakura-hp.jp',       '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'DOCTOR',        1,  NOW(), NOW(), NULL, NULL),
+ (1,  'admin',       '大石',     '智子',     'おおいし',   'ともこ',   'admin@sakura-hp.jp',       '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 2, 'NURSE',         1,  NOW(), NOW(), NULL, NULL),
  (2,  'doctor',      '佐藤',     '健一',     'さとう',     'けんいち', 'doctor@sakura-hp.jp',      '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        2,  NOW(), NOW(), NULL, NULL),
  (3,  'doctor2',     '山田',     '大輔',     'やまだ',     'だいすけ', 'doctor2@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        1,  NOW(), NOW(), NULL, NULL),
  (4,  'doctor3',     '田中',     '誠',       'たなか',     'まこと',   'doctor3@sakura-hp.jp',     '$2y$10$zMX/0U6HwOW6500ozkdpje3IiUN2TZq5cioBblHTeBn0R.4YdZ1Z.', 1, 'DOCTOR',        3,  NOW(), NOW(), NULL, NULL),
@@ -165,12 +167,14 @@ INSERT INTO user_patient_assignments (id, user_id, patient_id, created_at, updat
 --   field_name は日本語・値は enum 名＝TaskHistoryBuilder が実際に書く形式に合わせる。
 --   タスク1（朝の内服薬・現在 HIGH/PROGRESS）に矛盾しない流れ：
 --     昨日19:00 主治医の山田(id3)が優先度を MEDIUM→HIGH に引き上げ
---     今朝 7:45 担当の鈴木(id7)がステータスを CREATED→PROGRESS に（対応開始）
+--     45分前 担当の鈴木(id7)がステータスを CREATED→PROGRESS に（対応開始）
+--     ※NOW()相対にする理由：CURDATE()+時刻の固定だと、その時刻より前にデモ操作（完了など）を
+--       行った場合に「開始より完了が先」という矛盾した履歴に見えるため
 --   ※職種をまたいだ変更が履歴に残る例として、医師→看護師の順にしている
 -- ============================================================
 INSERT INTO task_histories (id, task_id, field_name, old_value, new_value, changed_by_user_id, changed_at) VALUES
  (1, 1,  '優先度',     'MEDIUM',  'HIGH',     3, DATE_ADD(CURDATE(), INTERVAL -300 MINUTE)),
- (2, 1,  'ステータス', 'CREATED', 'PROGRESS', 7, DATE_ADD(CURDATE(), INTERVAL 465 MINUTE)),
+ (2, 1,  'ステータス', 'CREATED', 'PROGRESS', 7, DATE_ADD(NOW(), INTERVAL -45 MINUTE)),
  (3, 11, 'ステータス', 'CREATED', 'PROGRESS', 8, DATE_ADD(CURDATE(), INTERVAL -120 MINUTE));
 
 -- ============================================================
@@ -209,4 +213,4 @@ INSERT INTO announcement_histories (id, announcement_id, field_name, old_value, 
 -- ============================================================
 INSERT INTO task_summaries (id, patient_id, summary, generated_by_user_id, generated_at, created_at, updated_at, deleted_at, updated_by) VALUES
  (1, 1, '高血圧・糖尿病の内服管理で入院中。本日は 8:00 の朝内服（優先度：高）から開始し、10:00 採血、11:00 主治医回診、15:00 点滴ルート交換を予定。昨日分の看護記録が未入力のため本日中の記入が必要。直近で主治医により朝内服の優先度が引き上げられており、与薬後の状態観察を優先する。',
-  7, DATE_ADD(CURDATE(), INTERVAL 470 MINUTE), NOW(), NOW(), NULL, NULL);
+  7, DATE_ADD(NOW(), INTERVAL -20 MINUTE), NOW(), NOW(), NULL, NULL);
