@@ -90,7 +90,7 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 | 層 | 技術 |
 |---|---|
-| バックエンド | Java 17 / Spring Boot 4.0 / Spring Security / Spring Data JPA (Hibernate) / JJWT |
+| バックエンド | Java 21 / Spring Boot 4.0 / Spring Security / Spring Data JPA (Hibernate) / JJWT |
 | DB | MySQL 8 / **Flyway**（スキーマ管理） |
 | フロントエンド | React 19 / TypeScript / Vite / React Router 7 / styled-components |
 | テスト | JUnit + MockMvc（バックエンド）/ Vitest + React Testing Library（フロントエンド） |
@@ -99,7 +99,7 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 選定の軸は、**転職を目指す業務システムの現場で実際に使われている技術で作る**ことです。そのうえで、それぞれの技術が何の要件に応えているかを記します。
 
-**Java 17 / Spring Boot** — 11 職種 × 患者 × タスクと関係の多いドメインを、型と Controller / Service / Repository のレイヤ構造で堅く組むためです。医療・業務システムの現場で広く使われており、就職後にそのまま活きることも重視しました。
+**Java 21 / Spring Boot** — 11 職種 × 患者 × タスクと関係の多いドメインを、型と Controller / Service / Repository のレイヤ構造で堅く組むためです。医療・業務システムの現場で広く使われており、就職後にそのまま活きることも重視しました。バージョンは現役 LTS のうち、業界調査で本番利用の主流と確認した 21 を選択しています（当初 17 で開発し、テストを安全網に 21 へ更新）。
 
 **MySQL 8** — このアプリのデータは多対多の関係と履歴・既読の記録が主役です。外部キー制約・一意制約で整合性を DB 側でも守れる、関係モデルが適切だと判断しました。
 
