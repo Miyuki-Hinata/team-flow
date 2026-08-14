@@ -1,4 +1,10 @@
-# ローカル開発用の MySQL を立てるための compose ファイル。
+# TeamFlow 全体（db + backend + frontend）を1コマンドで起動する compose ファイル。
+#
+# フロントエンドは別リポジトリのため、このリポジトリの「隣」に clone されている前提
+# （README のセットアップ手順に明記）：
+#   parent/
+#   ├── team-flow/        ← ここで docker compose up
+#   └── team-flow-front/
 #
 # 資格情報は直接書かず、同じディレクトリの .env から読み込む。
 # docker compose は .env を自動的に読むため、Spring 側（application.properties が
@@ -20,12 +26,79 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
-      # ホスト側のポートだけ差し替えられるようにする（既に 3306 を使っている環境向け）。
+      # ホスト側の「窓」。開発ツール（MySQL Workbench 等）や、アプリをホストで
+      # 直接動かす従来の開発スタイル用。コンテナ間通信はこの窓を通らないため、
+      # DB_PORT は「ホスト公開ポート」専用の変数になった
+      # （かつては「アプリの接続先ポート」と二役だった。backend の environment 参照）。
       # コンテナ側は MySQL の既定ポートなので固定。
-      - "${DB_PORT:-3306}:3306"
+      # 先頭の 127.0.0.1 は「このPC自身からしか入れない窓」にする指定。
+      # 省略すると 0.0.0.0（全ネットワーク口）になり、同じ LAN の他端末から
+      # DB へ直接ログイン試行できてしまう。用途はローカル起動なので自分限定で足りる
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
     volumes:
       # 名前付きボリューム。コンテナを作り直してもデータが消えないようにする。
       - mysql_data:/var/lib/mysql
+    # メモリ上限。通常使用の数倍を確保した「暴走時の天井」。
+    # きつく絞ると OOM kill（メモリ超過での強制終了）が「原因不明にアプリが死ぬ」
+    # という最悪の形で出るため、絞り込みではなく安全弁として張る
+    mem_limit: 1g
+    healthcheck:
+      # 「プロセスが居る」ではなく「接続を受け付けられる」ことを mysqladmin ping で確かめる。
+      # MySQL は起動からしばらく初期化中で接続を拒否するため、この区別が重要。
+      # $$ は「$ を compose が展開せず、そのままコンテナ内に渡す」ためのエスケープ
+      # （MYSQL_USER 等はコンテナ内の環境変数として評価させる）。
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 5s      # 5秒ごとに検査する
+      timeout: 5s       # 1回の検査の待ち時間
+      retries: 10       # 連続10回失敗したら unhealthy 扱い
+      start_period: 30s # 起動直後の猶予。初回はDB初期化が長いので失敗にカウントしない
+
+  backend:
+    # このリポジトリ直下の Dockerfile からビルドする
+    build: .
+    ports:
+      # ブラウザ（ホスト側の住人）が API を叩くための窓。
+      # ブラウザは同じPC上にいるので、db と同じく自分限定（127.0.0.1）で開ける
+      - "127.0.0.1:8080:8080"
+    environment:
+      # 接続先はサービス名。コンテナの中の localhost は「自分自身」なので使えない
+      DB_HOST: db
+      # コンテナ間の内線は常に MySQL 本来の 3306。
+      # ホスト公開ポート（db の ports の DB_PORT）とは別物なので固定値でよい
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-team-flow}
+      DB_USERNAME: ${DB_USERNAME:?未設定です。.env.example を参考に .env を作成してください}
+      DB_PASSWORD: ${DB_PASSWORD:?未設定です。.env.example を参考に .env を作成してください}
+      JWT_SECRET: ${JWT_SECRET:?未設定です。.env.example を参考に .env を作成してください}
+      # フロント（ホスト側 5173 で公開）からのアクセスを許可。デプロイ時は .env で上書き
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      # コンテナの既定タイムゾーンは UTC。日本の朝は UTC では前日夜のため、
+      # 「本日のタスク」の日付判定が9時間ずれる。DB（Asia/Tokyo）と必ず揃える
+      TZ: Asia/Tokyo
+    # JVM はコンテナのメモリ上限を認識してヒープを自動調整する（container-aware）ため、
+    # 上限を張るだけで JVM 側の設定は不要
+    mem_limit: 1g
+    depends_on:
+      # 「db が起動した」ではなく「healthcheck に合格した」まで backend の起動を待つ。
+      # これが無いと、MySQL の初期化中に Flyway が接続しに行って起動失敗する
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      # フロントは隣のリポジトリからビルドする（冒頭のフォルダ構成コメント参照）
+      context: ../team-flow-front
+      args:
+        # ビルド時に JS へ焼き込む API の宛先（Vite の仕様上、実行時には変更できない）。
+        # 通信の主体はブラウザ＝ホスト側の住人なので、backend:8080（内線）ではなく
+        # ホストの窓 localhost:8080 を指す
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+    ports:
+      # CORS の既定値（http://localhost:5173）に合わせてホスト側 5173 で公開。
+      # コンテナ側は nginx の既定ポート 80。これも自分限定の窓で足りる
+      - "127.0.0.1:5173:80"
+    # 静的ファイル配信のみなので小さめでも十分余裕がある
+    mem_limit: 256m
 
 volumes:
   mysql_data:
