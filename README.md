@@ -4,7 +4,7 @@
 
 多職種が同時に動く病棟で、「誰が・どの患者に・何をするか」が口頭とメモに散っている問題を解決する、**チーム内タスク共有アプリ**です。
 **前職で看護師として病棟に勤務した実体験**をもとに、医師・看護師・薬剤師・リハビリ職など 11 職種が担当・期限・進捗を**患者単位**で共有できるように設計しました。
-Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトークン認証、全テーブル共通の論理削除による監査証跡、Flyway によるスキーマ管理までを個人開発で実装しています。
+Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトークン認証、全テーブル共通の論理削除による監査証跡、Flyway によるスキーマ管理を個人開発で実装しています。
 
 | | |
 |---|---|
@@ -18,7 +18,7 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 病棟で一番時間を奪われていたのは医療行為ではなく、**情報の同期**でした。「あの患者さんの点滴指示、もう先生に確認の依頼しましたか？」を確認するために人を探す。申し送りまで状況が揃わない。誰かのメモにしか無い情報がある。
 
-現場で「こういう仕組みがあれば」と思っていたことを、エンジニアへの転職を機に自分の手で形にしたのが TeamFlow です。作る機能・作らない機能の判断は、一般論だけではなく病棟での実体験に基づいて行いました。
+現場で「こういう仕組みがあれば」と思っていたことを、エンジニアへの転職を機に自分の手で形にしたのが TeamFlow です。
 
 また、特定の職種に向けたアプリにはせず、**多くの職種で使える構成**にしました。現場での情報の滞りは同職種間だけでなく、職種と職種の**境界**でも多く発生していたため、職種は [`Role`](src/main/java/com/example/teamflow/enums/Role.java) として 11 種を列挙し、画面や権限を特定の職種に固定しない設計にしています。
 
@@ -107,7 +107,7 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 **JWT + リフレッシュトークン** — SPA と REST API を分離したので、サーバーにセッションを持たないステートレスな認証が必要でした。JWT 単体の「発行後に取り消せない」弱点は、DB で失効管理するリフレッシュトークンで補っています。
 
-**styled-components** — 色・余白・角丸をデザイントークンとして 1 箇所に定義し、全コンポーネントが型付きで参照する作り方をしたかったため、theme をコンポーネントへ直接配れる CSS-in-JS が合いました。目指す現場で使われている技術でもあります。テーマの差し替えでダークモードを実現しています。
+**styled-components** — 色・余白・角丸をデザイントークンとして 1 箇所に定義し、全コンポーネントが型付きで参照する作り方をしたかったため、theme をコンポーネントへ直接配れる CSS-in-JS が適していると判断しました。テーマの差し替えでダークモードを実現しています。
 
 **Context API（Redux は不採用）** — 現状、アプリ全体で共有する状態は認証・テーマ・トースト・未読件数の 4 つです。この規模に Redux のストア設計を持ち込むコストは見合わないと判断し、Context + props で管理しています。状態が増えて Context の連鎖が苦しくなった時点で再検討します。
 
@@ -196,7 +196,7 @@ erDiagram
 
 ### 4. スキーマの正解を Flyway に一本化
 
-テーブル定義の唯一の正解は [`V1__init.sql`](src/main/resources/db/migration/V1__init.sql)（16 テーブル）です。Hibernate の自動 DDL は無効化し（`spring.jpa.hibernate.ddl-auto=none`）、エンティティの書き方ひとつで DB が暗黙に変わる経路を塞いでいます。**手書きのスキーマ資料もあえて作りません**。Markdown に写した瞬間に「第 2 の正解」が生まれ、必ず古くなるからです。デモデータは Spring プロファイルで分離し（[application-demo.properties](src/main/resources/application-demo.properties)）、本番想定起動ではマスタのみ投入されます。
+テーブル定義の唯一の正解は [`V1__init.sql`](src/main/resources/db/migration/V1__init.sql)（16 テーブル）です。Hibernate の自動 DDL は無効化し（`spring.jpa.hibernate.ddl-auto=none`）、エンティティの書き方ひとつで DB が暗黙に変わる経路を塞いでいます。手書きのスキーマ資料もあえて作りませんでした。Markdown に写した瞬間に「第 2 の正解」が生まれ、必ず古くなるからです。デモデータは Spring プロファイルで分離し（[application-demo.properties](src/main/resources/application-demo.properties)）、本番想定起動ではマスタのみ投入されます。
 
 ### 5. 設定ミスは起動時に落とす
 
@@ -216,7 +216,7 @@ erDiagram
 
 ### 設計判断を文書で残す
 
-全コンポーネントについて「何を作ったか・**なぜこの設計にしたか**・何と一貫させたか」を [`docs/implementation/`（46 本）](https://github.com/Miyuki-Hinata/team-flow-front/tree/main/docs/implementation) に残しています。コミット本文にも判断理由を書く運用です（`git log` 参照）。
+全コンポーネントについて「何を作ったか・**なぜこの設計にしたか**・何と一貫させたか」を [`docs/implementation/`（46 本）](https://github.com/Miyuki-Hinata/team-flow-front/tree/main/docs/implementation) に残しています。コミット本文にも判断理由を書く運用にしました（`git log` 参照）。
 
 ### 詰まった問題から学んだこと（抜粋）
 
@@ -232,27 +232,44 @@ erDiagram
 
 ## セットアップ
 
-<!-- コマ12-13で docker compose up 一発に統合予定。完成したらこの節を差し替える -->
+Docker（Docker Desktop 等）があれば、`docker compose up` だけで全体（MySQL・API・フロントエンド）が起動します。
 
 ```bash
-# 1) 2つのリポジトリを並べて clone
+# 1) 2つのリポジトリを並べて clone（compose がフロントを ../team-flow-front から参照するため）
 git clone https://github.com/Miyuki-Hinata/team-flow.git
 git clone https://github.com/Miyuki-Hinata/team-flow-front.git
 
-# 2) バックエンド：環境変数を設定して起動
+# 2) 環境変数を用意（.env の JWT_SECRET・DB_USERNAME・DB_PASSWORD・DB_ROOT_PASSWORD を設定。
+#    値の決め方・生成コマンドは .env.example のコメント参照）
 cd team-flow
-cp .env.example .env        # JWT_SECRET 等を設定（生成方法は .env.example のコメント参照）
-docker compose up -d        # MySQL 8 が立ち上がる
+cp .env.example .env
+
+# 3) 起動（初回はイメージ取得とビルドで数分かかります。2回目以降は数十秒）
+docker compose up -d
+
+# 4) ブラウザで http://localhost:5173 を開く
+#    ログイン：nurse / admin1234（管理者は admin / admin1234）
+```
+
+デモデータ（患者・タスク・お知らせ）は起動時に自動投入されます。
+停止は `docker compose down`（DB データは保持）、データごと初期化は `docker compose down -v`。
+
+<details>
+<summary>Docker を使わず開発用に起動する場合</summary>
+
+```bash
+# MySQL だけコンテナで立て、アプリはホストで直接動かす（ホットリロードの効く開発スタイル）
+cd team-flow
+docker compose up -d db     # db サービスのみ起動
 ./mvnw spring-boot:run      # http://localhost:8080
 
-# 3) フロントエンド
 cd ../team-flow-front
 cp .env.example .env        # VITE_API_BASE_URL=http://localhost:8080
 npm install
 npm run dev                 # http://localhost:5173
-
-# 4) ログイン：nurse / admin1234（管理者は admin / admin1234）
 ```
+
+</details>
 
 ---
 
@@ -315,6 +332,5 @@ Personal portfolio. No license granted for reuse.
 
 <!--
 === 追記予定（docs/schedule.local.md のコマ番号）===
-コマ12-13: セットアップ節を docker compose up 一発に差し替え
 コマ18  : CI バッジ
 -->
