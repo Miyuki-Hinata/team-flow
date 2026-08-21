@@ -1,0 +1,51 @@
+# バックエンド CI：push のたびに MySQL service container を立てて mvnw verify を回す。
+# テストは @SpringBootTest が実DB前提のため、DB なしでは起動すら通らない。
+# MySQL の設定は docker-compose.yml の db サービス、資格情報は
+# application-test.properties の固定値（テスト専用）と揃える。
+name: CI
+
+on: push
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      # docker-compose.yml の db サービスの CI 版
+      mysql:
+        image: mysql:8.0
+        env:
+          # コンテナ初期化にだけ必要（アプリは root では接続しない）。
+          # この MySQL は数分で消える CI 専用なので秘密扱いは不要
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: team-flow
+          # application-test.properties の spring.datasource.* と同じ値
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          # コンテナ既定は UTC。デモデータの CURDATE() が日本の朝に
+          # 前日扱いになるのを防ぐ（compose と同じ設定）
+          TZ: Asia/Tokyo
+        ports:
+          # runner 上のテストが localhost:3306 で繋げるように窓を開ける
+          - 3306:3306
+        # compose の healthcheck の移植。「接続を受け付けられる」ことを確かめ、
+        # healthy になるまで steps は始まらない（service_healthy 相当・自動）
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uuser -ppassword"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+          --health-start-period=30s
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Temurin 21 = Dockerfile と同じ。検証環境と出荷環境を揃える
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      # compile → test → package → verify を一括実行（テスト22件は実DBに接続）
+      - run: ./mvnw verify
