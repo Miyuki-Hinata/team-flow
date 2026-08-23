@@ -1,6 +1,7 @@
 # TeamFlow
 
-<!-- コマ18で追記：CI バッジ（front / back） -->
+[![Backend CI](https://github.com/Miyuki-Hinata/team-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/Miyuki-Hinata/team-flow/actions/workflows/ci.yml)
+[![Frontend CI](https://github.com/Miyuki-Hinata/team-flow-front/actions/workflows/ci.yml/badge.svg)](https://github.com/Miyuki-Hinata/team-flow-front/actions/workflows/ci.yml)
 
 多職種が同時に動く病棟で、「誰が・どの患者に・何をするか」が口頭とメモに散っている問題を解決する、**チーム内タスク共有アプリ**です。
 **前職で看護師として病棟に勤務した実体験**をもとに、医師・看護師・薬剤師・リハビリ職など 11 職種が担当・期限・進捗を**患者単位**で共有できるように設計しました。
@@ -94,6 +95,7 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 | DB | MySQL 8 / **Flyway**（スキーマ管理） |
 | フロントエンド | React 19 / TypeScript / Vite / React Router 7 / styled-components |
 | テスト | JUnit + MockMvc（バックエンド）/ Vitest + React Testing Library（フロントエンド） |
+| CI | GitHub Actions（push ごとに lint / テスト / ビルドを検証。バックエンドは MySQL のサービスコンテナ上でテスト） |
 
 ### 技術選定の理由
 
@@ -277,7 +279,6 @@ npm run dev                 # http://localhost:5173
 
 現在も継続して開発しています（Issue はこのリポジトリに集約）。
 
-- [#22](https://github.com/Miyuki-Hinata/team-flow/issues/22) `docker compose up` 一発起動への統合と CI（フロント / バックエンド）
 - [#24](https://github.com/Miyuki-Hinata/team-flow/issues/24) タスク一覧のページネーションと N+1 クエリの点検
 - [#26](https://github.com/Miyuki-Hinata/team-flow/issues/26) AI サマリの本実装 — 現状は `LlmService` インターフェースとモック実装まで。**LLM 接続は未実装**で、差し替えられる形にしてあります
 - [#27](https://github.com/Miyuki-Hinata/team-flow/issues/27) E2E テスト（Selenium）
@@ -329,8 +330,3 @@ npm run dev                 # http://localhost:5173
 ---
 
 Personal portfolio. No license granted for reuse.
-
-<!--
-=== 追記予定（docs/schedule.local.md のコマ番号）===
-コマ18  : CI バッジ
--->
