@@ -2,7 +2,7 @@
 # テストは @SpringBootTest が実DB前提のため、DB なしでは起動すら通らない。
 # MySQL の設定は docker-compose.yml の db サービス、資格情報は
 # application-test.properties の固定値（テスト専用）と揃える。
-name: CI
+name: Backend CI
 
 on: push
 
