@@ -281,7 +281,7 @@ npm run dev                 # http://localhost:5173
 
 - [#24](https://github.com/Miyuki-Hinata/team-flow/issues/24) タスク一覧のページネーションと N+1 クエリの点検
 - [#26](https://github.com/Miyuki-Hinata/team-flow/issues/26) AI サマリの本実装 — 現状は `LlmService` インターフェースとモック実装まで。**LLM 接続は未実装**で、差し替えられる形にしてあります
-- [#27](https://github.com/Miyuki-Hinata/team-flow/issues/27) E2E テスト（Selenium）
+- [#27](https://github.com/Miyuki-Hinata/team-flow/issues/27) E2E テスト（Playwright）
 - [#25](https://github.com/Miyuki-Hinata/team-flow/issues/25) 公開デモ環境のデプロイ
 
 ---
