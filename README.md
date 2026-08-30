@@ -34,6 +34,9 @@ Spring Boot 4 + React 19 / TypeScript の SPA。JWT + リフレッシュトー�
 
 ## デモ
 
+🌐 **公開デモ：https://teamflow.hinata-dev.com**（`nurse / admin1234`、管理者は `admin / admin1234`）
+デモデータは毎日 4:00 に初期化されます。
+
 **看護師の朝の業務フロー** — ログイン → ダッシュボード → 受け持ち患者の 24 時間タイムライン → タスクの状態変更（変更が履歴に記録される）：
 
 ![看護師アカウントでログインし、ダッシュボードから受け持ち患者のタイムラインを開き、タスクを完了にするデモ](docs/assets/demo-nurse.gif)
